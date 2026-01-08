@@ -10,19 +10,8 @@ import {
 import { supabase } from "@/app/lib/supabase/client";
 import { useAuth } from "./AuthContext";
 import { useRouter } from "next/navigation";
+import { Message } from "@/types/chat";
 
-// Updated Message interface matching new schema
-export interface Message {
-  id: string;
-  chat_session_id: string;
-  role: "user" | "assistant";
-  content_text: string;
-  content_json: string[]; // Array of suggestions (assistant only)
-  created_at: string;
-  context_used?: any[];
-  user_feedback?: number | null;
-  feedback_text?: string | null;
-}
 
 interface ChatContextType {
   messages: Message[];
