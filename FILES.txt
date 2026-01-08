@@ -1,0 +1,275 @@
+# AI Hospital Receptionist - Professional File Structure
+
+## Recommended Project Structure
+
+```
+ai-hospital-receptionist/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── (public)/                 # Public routes group
+│   │   │   ├── page.tsx              # Landing/Home page
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx            # Public layout
+│   │   │
+│   │   ├── (auth)/                   # Protected routes group
+│   │   │   ├── chat/
+│   │   │   │   ├── page.tsx          # Chat list page
+│   │   │   │   ├── [sessionId]/
+│   │   │   │   │   └── page.tsx      # Individual chat session
+│   │   │   │   └── layout.tsx
+│   │   │   │
+│   │   │   ├── dashboard/
+│   │   │   │   ├── page.tsx          # Main dashboard
+│   │   │   │   ├── analytics/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── stats/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── layout.tsx
+│   │   │   │
+│   │   │   └── layout.tsx            # Auth layout wrapper
+│   │   │
+│   │   ├── api/                      # API Routes
+│   │   │   ├── auth/
+│   │   │   │   ├── login/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── logout/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── session/
+│   │   │   │       └── route.ts
+│   │   │   │
+│   │   │   ├── chat/
+│   │   │   │   ├── route.ts          # List/create chats
+│   │   │   │   ├── [sessionId]/
+│   │   │   │   │   └── route.ts      # Get/update specific chat
+│   │   │   │   └── stream/
+│   │   │   │       └── route.ts      # Streaming endpoint
+│   │   │   │
+│   │   │   ├── dashboard/
+│   │   │   │   ├── analytics/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── stats/
+│   │   │   │       └── route.ts
+│   │   │   │
+│   │   │   └── upload/
+│   │   │       └── route.ts
+│   │   │
+│   │   ├── layout.tsx                # Root layout
+│   │   ├── globals.css
+│   │   └── favicon.ico
+│   │
+│   ├── components/                   # React Components
+│   │   ├── chat/
+│   │   │   ├── ChatDetailPage.tsx
+│   │   │   ├── ChatMessage.tsx
+│   │   │   ├── ChatInput.tsx
+│   │   │   ├── ChatList.tsx
+│   │   │   └── AssistantMessage.tsx
+│   │   │
+│   │   ├── dashboard/
+│   │   │   ├── DashboardSidebar.tsx
+│   │   │   ├── AnalyticsChart.tsx
+│   │   │   └── StatsCard.tsx
+│   │   │
+│   │   ├── auth/
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── AuthGuard.tsx
+│   │   │   └── ChatAuthGuard.tsx
+│   │   │
+│   │   ├── shared/                   # Shared components
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── MatchBar.tsx
+│   │   │   ├── PdfTable.tsx
+│   │   │   └── UploadProgress.tsx
+│   │   │
+│   │   └── ui/                       # UI primitives (shadcn/ui)
+│   │       ├── button.tsx
+│   │       ├── input.tsx
+│   │       ├── dialog.tsx
+│   │       └── ...
+│   │
+│   ├── lib/                          # Core libraries & utilities
+│   │   ├── rag/                      # RAG-specific logic
+│   │   │   ├── embedding.ts
+│   │   │   ├── vectorStore.ts
+│   │   │   ├── retrieval.ts
+│   │   │   └── pinecone/
+│   │   │       └── client.ts
+│   │   │
+│   │   ├── ai/                       # AI/LLM integration
+│   │   │   ├── openai.ts
+│   │   │   ├── streaming.ts
+│   │   │   ├── prompts/
+│   │   │   │   ├── system.ts
+│   │   │   │   └── templates.ts
+│   │   │   └── providers/
+│   │   │       ├── googleProvider.ts
+│   │   │       └── embedAndUpsert.ts
+│   │   │
+│   │   ├── database/                 # Database layer
+│   │   │   ├── supabase/
+│   │   │   │   ├── client.ts
+│   │   │   │   ├── server.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── queries/
+│   │   │   │   ├── chat.ts
+│   │   │   │   ├── user.ts
+│   │   │   │   └── analytics.ts
+│   │   │   └── migrations/
+│   │   │
+│   │   ├── auth/                     # Authentication
+│   │   │   ├── session.ts
+│   │   │   ├── middleware.ts
+│   │   │   └── utils.ts
+│   │   │
+│   │   ├── pdf/                      # PDF processing
+│   │   │   ├── loader.ts
+│   │   │   ├── parser.ts
+│   │   │   └── utils.ts
+│   │   │
+│   │   └── utils/                    # General utilities
+│   │       ├── cn.ts                 # className utility
+│   │       ├── rate-limit.ts
+│   │       └── helpers.ts
+│   │
+│   ├── hooks/                        # Custom React hooks
+│   │   ├── useChat.ts
+│   │   ├── useAuth.ts
+│   │   ├── useUpload.ts
+│   │   └── useDashboard.ts
+│   │
+│   ├── context/                      # React Context providers
+│   │   ├── AuthContext.tsx
+│   │   ├── ChatContext.tsx
+│   │   └── ThemeContext.tsx
+│   │
+│   ├── types/                        # TypeScript types
+│   │   ├── chat.ts
+│   │   ├── user.ts
+│   │   ├── database.ts
+│   │   └── api.ts
+│   │
+│   ├── config/                       # Configuration files
+│   │   ├── site.ts                   # Site metadata
+│   │   ├── constants.ts              # App constants
+│   │   └── env.ts                    # Environment validation
+│   │
+│   └── middleware.ts                 # Next.js middleware
+│
+├── public/                           # Static assets
+│   ├── images/
+│   ├── icons/
+│   └── pdfs/
+│
+├── sql/                              # Database scripts
+│   ├── schema/
+│   │   ├── 01_schemas.sql
+│   │   └── triggers/
+│   │       └── messagecountrpc.sql
+│   └── seed/
+│       └── initial-data.sql
+│
+├── docs/                             # Project documentation
+│   ├── architecture.md
+│   ├── api.md
+│   └── deployment.md
+│
+├── .env.local
+├── .env.example
+├── .gitignore
+├── next.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── package.json
+├── README.md
+└── FILES.txt                         # This structure document
+
+```
+
+## Key Improvements
+
+### 1. **Route Grouping**
+- `(public)` - Public routes without authentication
+- `(auth)` - Protected routes requiring authentication
+- Routes are organized by feature, not by auth status
+
+### 2. **Component Organization**
+- **Feature-based folders**: Components grouped by domain (chat, dashboard, auth)
+- **Shared components**: Reusable components in `shared/`
+- **UI primitives**: shadcn/ui components in `ui/`
+
+### 3. **Lib Structure**
+- **Domain-specific folders**: Each major feature has its own folder
+- **Clear separation**: RAG, AI, Database, Auth are separate concerns
+- **Utilities**: General helpers separated from domain logic
+
+### 4. **Type Safety**
+- Centralized TypeScript types in `types/`
+- Separate from implementation
+- Easier to maintain and share
+
+### 5. **API Routes**
+- Mirrors feature structure
+- Nested by resource (chat, dashboard, auth)
+- Clear REST-like patterns
+
+## Migration Steps
+
+1. **Create new structure**
+   ```bash
+   mkdir -p src/{app,components,lib,hooks,context,types,config}
+   ```
+
+2. **Move files systematically**
+   - Start with types and config
+   - Move lib functions
+   - Migrate components
+   - Update app routes
+   - Fix API routes
+
+3. **Update imports**
+   - Use path aliases in `tsconfig.json`:
+   ```json
+   {
+     "compilerOptions": {
+       "paths": {
+         "@/*": ["./src/*"],
+         "@/components/*": ["./src/components/*"],
+         "@/lib/*": ["./src/lib/*"],
+         "@/types/*": ["./src/types/*"]
+       }
+     }
+   }
+   ```
+
+4. **Test incrementally**
+   - Move one feature at a time
+   - Test after each migration
+   - Keep git commits granular
+
+## Benefits
+
+✅ **Scalability**: Easy to add new features
+✅ **Maintainability**: Clear where everything belongs
+✅ **Collaboration**: Team members can navigate easily
+✅ **Testing**: Easier to test isolated modules
+✅ **Performance**: Better code splitting opportunities
+✅ **Type Safety**: Centralized type definitions
+
+## Naming Conventions
+
+- **Files**: camelCase for utilities, PascalCase for components
+- **Folders**: kebab-case or camelCase (consistent)
+- **Components**: PascalCase.tsx
+- **Utils**: camelCase.ts
+- **Types**: camelCase.ts (export types in PascalCase)
+
+## Next Steps
+
+1. Set up path aliases in `tsconfig.json`
+2. Create the folder structure
+3. Move files in phases (types → lib → components → app)
+4. Update all import statements
+5. Test thoroughly
+6. Update documentation
