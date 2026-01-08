@@ -1,4 +1,3 @@
-// List/create chatsimport { getHospitalNamespace } from "@/lib/pineconeClient";
 import { generateHospitalAnswer } from "@/lib/ai/googleProvider";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
