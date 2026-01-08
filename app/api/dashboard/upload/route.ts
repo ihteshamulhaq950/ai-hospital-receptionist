@@ -9,7 +9,7 @@ import { getSafeFileName } from "@/lib/utils/utils";
 export const runtime = "nodejs";
 
 // POST endpoint to upload a new PDF
-async function POST(request: NextRequest) {
+export async function POST(request: NextRequest) {
   let uploadedFilePath: string | null = null;
   let pdfDocumentId: string | null = null;
   const supabase = await createClient();

@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 // GET endpoint to list PDFs with pagination and search
-async function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
@@ -78,6 +78,3 @@ async function GET(request: NextRequest) {
   }
 }
 
-
-
-export { GET };
