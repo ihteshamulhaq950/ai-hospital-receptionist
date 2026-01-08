@@ -7,7 +7,7 @@ import {
   useState,
   useCallback,
 } from "react";
-import { supabase } from "@/app/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -130,8 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user);
       setIsAnonymous(false);
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
     }
   };
 

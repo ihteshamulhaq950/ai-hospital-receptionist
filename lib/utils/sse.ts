@@ -4,7 +4,7 @@
 
 export interface SSEResponse {
   stream: ReadableStream;
-  sendEvent: (event: string, data: any) => void;
+  sendEvent: (event: string, data: unknown) => void;
   close: () => void;
 }
 
@@ -24,7 +24,7 @@ export function createSSEResponse(): SSEResponse {
     },
   });
 
-  const sendEvent = (event: string, data: any) => {
+  const sendEvent = (event: string, data: unknown) => {
     if (controllerRef) {
       try {
         const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -53,7 +53,7 @@ export function createSSEResponse(): SSEResponse {
 /**
  * Client-side SSE event handler types
  */
-export type SSEEventHandler = (data: any) => void;
+export type SSEEventHandler = (data: unknown) => void;
 
 export interface SSEEventHandlers {
   onProgress?: SSEEventHandler;

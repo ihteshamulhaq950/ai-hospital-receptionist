@@ -17,3 +17,8 @@ export interface Message {
   user_feedback?: number | null;
   feedback_text?: string | null;
 }
+
+export interface AssistantContent {
+  answer: string;
+  suggestions: string[];
+}

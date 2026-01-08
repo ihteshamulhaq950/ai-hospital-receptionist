@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { Bot, Plus, X, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/app/lib/utils/utils";
+import { cn } from "@/lib/utils/utils";
 import { useChat } from "@/context/ChatContext";
-import { supabase } from "@/app/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 

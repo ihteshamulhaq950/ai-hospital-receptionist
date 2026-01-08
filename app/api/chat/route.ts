@@ -1,11 +1,12 @@
 // List/create chatsimport { getHospitalNamespace } from "@/lib/pineconeClient";
-import { generateHospitalAnswer } from "@/app/lib/ai/googleProvider";
+import { generateHospitalAnswer } from "@/lib/ai/googleProvider";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/app/lib/supabase/server";
-import { answerWithHospitalContext } from "@/app/lib/rag/answerWithHospitalContext";
+import { createClient } from "@/lib/supabase/server";
+import { answerWithHospitalContext } from "@/lib/rag/answerWithHospitalContext";
 import { AnswerWithContextResult } from "@/types/rag";
-import { createSSEResponse } from "@/app/lib/utils/sse";
-import { getHospitalNamespace } from "@/app/lib/pinecone/pineconeClient";
+import { createSSEResponse } from "@/lib/utils/sse";
+import { getHospitalNamespace } from "@/lib/pinecone/pineconeClient";
+import { AssistantContent } from "@/types/chat";
 
 export const runtime = "nodejs";
 
@@ -118,8 +119,8 @@ export async function POST(req: NextRequest) {
       const namespace = getHospitalNamespace();
       console.log("[CHAT_API] Pinecone namespace:", namespace);
 
-      let assistantContent: any;
-      let contextUsed: any[] = [];
+      let assistantContent: AssistantContent;
+      let contextUsed: unknown[] = [];
 
       try {
         const result: AnswerWithContextResult =
@@ -129,7 +130,10 @@ export async function POST(req: NextRequest) {
             generateAnswer: generateHospitalAnswer,
           });
 
-        assistantContent = result.assistantContent;
+        assistantContent = {
+          ...result.assistantContent,
+          suggestions: result.assistantContent.suggestions || [],
+        };
         contextUsed = result.contextUsed || [];
 
         console.timeEnd("[CHAT_API] RAG_TIME");

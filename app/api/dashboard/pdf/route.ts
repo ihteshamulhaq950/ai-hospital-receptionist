@@ -1,12 +1,7 @@
 // api/dashboard/pdfs/route.ts
 
 import { createClient } from "@/lib/supabase/server";
-import { embedAndUpsert } from "@/lib/rag/embedAndUpsert";
-import { loadPDF } from "@/lib/pdf/pdfLoader";
-import { DEFAULT_NAMESPACE } from "@/lib/pinecone/pineconeClient";
 import { NextRequest, NextResponse } from "next/server";
-import { createSSEResponse } from "@/lib/utils/sse";
-import { getSafeFileName } from "@/lib/utils/utils";
 
 export const runtime = "nodejs";
 

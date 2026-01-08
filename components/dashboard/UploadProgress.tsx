@@ -1,7 +1,7 @@
 "use client"
 
 import { CheckCircle2, Loader2, Circle } from "lucide-react"
-import { cn } from "@/app/lib/utils/utils"
+import { cn } from "@/lib/utils/utils"
 
 interface ProcessStep {
   label: string
@@ -20,7 +20,7 @@ export function UploadProgress({ steps, uploadProgress }: UploadProgressProps) {
       {uploadProgress > 0 && uploadProgress < 100 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">Uploading...</span>
+            <span className="font-medium">Uploading&period;&period;&period;</span>
             <span className="text-muted-foreground">{uploadProgress}%</span>
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -54,7 +54,7 @@ export function UploadProgress({ steps, uploadProgress }: UploadProgressProps) {
               >
                 {step.label}
               </p>
-              {step.status === "processing" && <p className="text-xs text-muted-foreground">In progress...</p>}
+              {step.status === "processing" && <p className="text-xs text-muted-foreground">In progress&period;&period;&period;</p>}
             </div>
           </div>
         ))}

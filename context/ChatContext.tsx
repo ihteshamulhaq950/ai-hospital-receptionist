@@ -7,7 +7,7 @@ import {
   useRef,
   useCallback,
 } from "react";
-import { supabase } from "@/app/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "./AuthContext";
 import { useRouter } from "next/navigation";
 import { Message } from "@/types/chat";
@@ -84,7 +84,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         // - content_json: string[] (suggestions array)
         setMessages(data as Message[]);
       }
-    } catch (err) {
+    } catch (err:unknown) {
       console.error("Failed to load messages:", err);
       setError("Failed to load messages");
     } finally {
@@ -142,7 +142,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         // With SSE, we don't need to handle response here
         // The chat page handles the streaming
         console.log("Message sent, streaming response...");
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error sending message:", err);
         setError(err instanceof Error ? err.message : "Failed to send message");
 

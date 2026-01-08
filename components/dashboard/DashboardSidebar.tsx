@@ -12,7 +12,7 @@ import {
   Activity,
   BarChart3,
 } from "lucide-react";
-import { cn } from "@/app/lib/utils/utils";
+import { cn } from "@/lib/utils/utils";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
