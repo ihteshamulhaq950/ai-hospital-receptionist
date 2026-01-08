@@ -117,7 +117,7 @@ export default function UploadPage() {
       formData.append("pdfFile", selectedFile);
 
       // Use fetch with streaming response
-      const response = await fetch("/api/dashboard/pdfs", {
+      const response = await fetch("/api/dashboard/upload", {
         method: "POST",
         body: formData,
       });
