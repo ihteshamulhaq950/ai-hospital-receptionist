@@ -1,77 +1,96 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "./server";
-import { rateLimit } from "../utils/rateLimit";
-// import { ClerkMiddlewareAuth } from "@clerk/nextjs/server";
+import { createClient } from './server';
+import { NextResponse, type NextRequest } from 'next/server';
+import { rateLimit } from '../utils/rateLimit';
 
+export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  let supabaseResponse = NextResponse.next({ request });
+  console.log("✅Request pathname is:", pathname)
 
-// Route type identifier
-export function getRouteType(pathname: string): 'chat' | 'chat-api' | 'dashboard' | 'dashboard-api'| 'public' {
-  if (pathname.startsWith('/api/chat')) return 'chat-api';
-  if (pathname.startsWith('/chat')) return 'chat';
-  if (pathname.startsWith('/dashboard')) return 'dashboard';
-  if (pathname.startsWith('/api/dashboard')) return 'dashboard-api';
-  return 'public';
-}
+  const supabase = await createClient();
 
-// @typescript-eslint/no-explicit-any
-export async function handleRouteByType(
-  routeType: 'chat' | 'chat-api' | 'dashboard' | 'dashboard-api'| 'public', 
-  req: NextRequest, 
-): Promise<NextResponse> {
+  // 1. GET AUTH STATE (Crucial for all protected checks)
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  switch (routeType) {
-    case 'chat':
-    case 'chat-api':  
-    {
-      const supabase = await createClient();
-      const { data: { user}, error } = await supabase.auth.getUser();
-
-      if (error || !user) {
-        // Prevent redirect loop - don't redirect if already on sign-in
-        if (req.nextUrl.pathname.startsWith('/login')) {
-          return NextResponse.next();
-        }
-        
-        const signInUrl = new URL('/login', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        return NextResponse.redirect(signInUrl);
-      }
-
-      const { success, limit, reset, remaining } = await rateLimit.limit(user.id);
-
-      if (!success) {
-        return new NextResponse('Too many requests', { status: 429 });
-      }
-
-      const response = NextResponse.next();
-      response.headers.set('X-RateLimit-Limit', limit.toString());
-      response.headers.set('X-RateLimit-Remaining', remaining.toString());
-      response.headers.set('X-RateLimit-Reset', reset.toString());
-      return response;
-    }
-
-    case 'dashboard':
-    case 'dashboard-api':  
-    {
-      // const { userId } = await auth();
-      const supabase = await createClient();
-      const {data: {user}} = await supabase.auth.getUser();
-
-      if (!user?.id) {
-        // Prevent redirect loop - don't redirect if already on sign-in
-        if (req.nextUrl.pathname.startsWith('/login')) {
-          return NextResponse.next();
-        }
-        
-        const signInUrl = new URL('/login', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        return NextResponse.redirect(signInUrl);
-      }
-      return NextResponse.next();
-    }
-
-    case 'public': {
-      return NextResponse.next();
-    }
+  if (user) {
+    console.log("✅User is present inside proxy:", user)
   }
+
+  // 2. DEFINE ROUTE GROUPS
+  const isChatApiRoute = pathname.startsWith('/api/chat');
+  const isChatRoute = pathname.startsWith('/chat')
+  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/api/dashboard');
+  const isLoginPage = pathname === '/login';
+
+  console.log("isChatRoute is:", isChatRoute);
+  console.log("✅isDashboardRoute is:", isDashboardRoute);
+  
+  
+
+  // ========================================================================
+  // ALLOWED BY DEFAULT: If it's not a Chat or Dashboard route, let it pass.
+  // This covers /, /about, /contact, /login, and any random 404 paths.
+  // ========================================================================
+  if (!isChatApiRoute && !isDashboardRoute) {
+    return supabaseResponse;
+  }
+
+  // ========================================================================
+  // PROTECTED: From here down, we only care about /chat and /dashboard
+  // ========================================================================
+
+  // A. NO USER PRESENT: Redirect to home
+  if (authError || !user) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // B. CLIENT ROUTES (/chat)
+  if (isChatApiRoute) {
+    console.log("I am inside isChatRoute");
+    
+    // Check Rate Limit for all chat users (Anonymous or Registered)
+    const { success } = await rateLimit.limit(user.id);
+    if (!success) {
+      return new NextResponse('Too many requests. Please slow down.', { status: 429 });
+    }
+    console.log("I have not hit too many requests");
+    
+    return supabaseResponse;
+  }
+
+  // C. ADMIN ROUTES (/dashboard)
+  if (isDashboardRoute) {
+    console.log("✅I am inside isDashboardRoute");
+    
+    // 1. Block Anonymous
+    if (user.is_anonymous) {
+        console.log("I am anonymous inside isDashboardRoute rejected to /chat while pathname is:", pathname);
+        
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // 2. Verify Admin Role in Profile Table
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    console.log("😂Profile data is:", profile);
+    console.log("😢Profile error is:", error);
+    
+    
+
+    if (!profile || profile.role !== 'admin') {
+      // Not an admin: Send to their chat app
+      console.log("I have authentic, non-anon, but have no profile or profile.role is user");
+      
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    console.log("✅I have profile where profile user_id is equal to user.id", profile.user_id === user.id);
+    
+    return supabaseResponse;
+  }
+
+  return supabaseResponse;
 }
