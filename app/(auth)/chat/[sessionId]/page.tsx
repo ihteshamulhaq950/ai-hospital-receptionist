@@ -93,7 +93,7 @@ export default function ChatDetailPage() {
     try {
       console.time("[CHAT_UI] SSE_CONNECTION");
 
-      const response = await fetch("/api/chat/query", {
+      const response = await fetch("/api/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
