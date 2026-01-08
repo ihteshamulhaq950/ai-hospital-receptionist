@@ -27,7 +27,6 @@ interface ChatContextType {
   loadingMessages: boolean;
   currentSessionId: string | undefined;
   getChatMessagesById: (sessionId?: string) => Promise<void>;
-  handleSend: (query: string, sessionId: string | undefined) => Promise<void>;
   handleNewChat: () => void;
   handleSelectSession: (id: string, sessionId?: string) => void;
 }
@@ -93,71 +92,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   /**
-   * Send a message - NOT USED ANYMORE
-   * This is kept for backward compatibility but the actual
-   * sending is now handled by SSE streaming in the chat page
-   */
-  const handleSend = useCallback(
-    async (userQuery: string, sessionId: string | undefined) => {
-      if (!userQuery.trim() || isAssistantTyping || !user) return;
-
-      console.warn(
-        "⚠️ handleSend called but SSE streaming should be used instead"
-      );
-
-      const content = userQuery.trim();
-
-      // Create optimistic user message
-      const optimisticUserMessage: Message = {
-        id: `temp-user-${Date.now()}`,
-        chat_session_id: sessionId || "temp",
-        role: "user",
-        content_text: content,
-        content_json: [], // Always empty for user messages
-        created_at: new Date().toISOString(),
-        context_used: [],
-      };
-
-      setMessages((prev) => [...prev, optimisticUserMessage]);
-      setInput("");
-      setIsAssistantTyping(true);
-      setError(null);
-
-      try {
-        const res = await fetch("/api/chat/query", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content,
-            chatSessionId: sessionId,
-            isFirstMessage: false,
-          }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Failed to send message");
-        }
-
-        // With SSE, we don't need to handle response here
-        // The chat page handles the streaming
-        console.log("Message sent, streaming response...");
-      } catch (err: unknown) {
-        console.error("Error sending message:", err);
-        setError(err instanceof Error ? err.message : "Failed to send message");
-
-        // Remove optimistic message on error
-        setMessages((prev) =>
-          prev.filter((m) => m.id !== optimisticUserMessage.id)
-        );
-      } finally {
-        setIsAssistantTyping(false);
-      }
-    },
-    [isAssistantTyping, user]
-  );
-
-  /**
    * Start a new chat - clears all state and navigates to empty chat
    */
   const handleNewChat = useCallback(() => {
@@ -215,7 +149,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     loadingMessages,
     currentSessionId,
     getChatMessagesById,
-    handleSend,
     handleNewChat,
     handleSelectSession,
   };

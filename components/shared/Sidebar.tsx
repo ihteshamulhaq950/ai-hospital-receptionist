@@ -10,7 +10,6 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-
 export interface Session {
   id: string;
   title: string;
@@ -19,81 +18,83 @@ export interface Session {
 }
 
 export default function Sidebar() {
-
   const [recentChats, setRecentChats] = useState<Session[]>([]);
-  const { sidebarOpen, setSidebarOpen} = useChat();
-  const {user} = useAuth();
+  const { sidebarOpen, setSidebarOpen } = useChat();
+  const { user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    fetchRecentChats()
-  },[user])
+    fetchRecentChats();
+  }, [user]);
 
   const fetchRecentChats = async () => {
     if (!user) return;
 
     try {
-     const { data } = await supabase
-      .from("chat_sessions")
-      .select("id, title, message_count, is_closed")
-      .eq("user_id", user.id)
-      .eq("is_closed", false)
-      .order("created_at", { ascending: false })
-      .limit(5);
+      const { data } = await supabase
+        .from("chat_sessions")
+        .select("id, title, message_count, is_closed")
+        .eq("user_id", user.id)
+        .eq("is_closed", false)
+        .order("created_at", { ascending: false })
+        .limit(5);
 
-      console.log("recentChats fetched inside sidebar:", data)
-    setRecentChats(data || []); 
+      console.log("recentChats fetched inside sidebar:", data);
+      setRecentChats(data || []);
     } catch (error: unknown) {
-      console.error("Failed to fetch chats:", error)
+      console.error("Failed to fetch chats:", error);
     }
-
   };
-
 
   // Refresh chats when a new chat is created
   useEffect(() => {
-    console.log("Chat refreshed in sidebar mounted")
+    console.log("Chat refreshed in sidebar mounted");
     const handleChatRefresh = () => fetchRecentChats();
-    window.addEventListener('chatCreated', handleChatRefresh);
-    return () => window.removeEventListener('chatCreated', handleChatRefresh);
-  },[user])
-
+    window.addEventListener("chatCreated", handleChatRefresh);
+    return () => window.removeEventListener("chatCreated", handleChatRefresh);
+  }, [user]);
 
   // Close sidebar on mobile when clicking outside
-    useEffect(() => {
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-        if (
-          sidebarOpen &&
-          !target.closest(".sidebar") &&
-          !target.closest(".menu-button")
-        ) {
-          setSidebarOpen(false);
-        }
-      };
-  
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [sidebarOpen, setSidebarOpen]);
-
-    const handleNewChat = () => {
-      router.push('/chat')
-    }
-  
-  
-    const handleSelectSession = (id: string) => {
-      router.push(`/chat/${id}`)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        sidebarOpen &&
+        !target.closest(".sidebar") &&
+        !target.closest(".menu-button")
+      ) {
+        setSidebarOpen(false);
+      }
     };
-  
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [sidebarOpen, setSidebarOpen]);
+
+  const handleNewChat = () => {
+    setSidebarOpen(false); // Close sidebar on mobile after action
+    router.push("/chat");
+  };
+
+  const handleSelectSession = (id: string) => {
+    setSidebarOpen(false); // Close sidebar on mobile after action
+    router.push(`/chat/${id}`);
+  };
 
   return (
+    <>
+      {/* Overlay for mobile - MOVED OUTSIDE*/}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       <aside
         className={cn(
           "sidebar fixed lg:relative inset-y-0 left-0 z-40 w-64 bg-white border-r transform transition-transform duration-300 ease-in-out flex flex-col",
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Sidebar Header */}
@@ -134,28 +135,28 @@ export default function Sidebar() {
           </div>
           <div className="space-y-1">
             {recentChats.map((chat: Session) => {
-              const isActive = pathname === `/chat/${chat.id}`
+              const isActive = pathname === `/chat/${chat.id}`;
               return (
-              <button
-                key={chat.id}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg hover:bg-slate-50 transition-colors group",
-                  isActive && "bg-blue-50 hover:bg-blue-50"
-                )}
-                onClick={() => handleSelectSession(chat.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-900 truncate">
-                      {chat.title || `Chat ${chat.id.slice(-4)}`}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {chat.message_count} messages
+                <button
+                  key={chat.id}
+                  className={cn(
+                    "w-full text-left p-3 rounded-lg hover:bg-slate-50 transition-colors group",
+                    isActive && "bg-blue-50 hover:bg-blue-50"
+                  )}
+                  onClick={() => handleSelectSession(chat.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-900 truncate">
+                        {chat.title || `Chat ${chat.id.slice(-4)}`}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {chat.message_count} messages
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-              )
+                </button>
+              );
             })}
           </div>
         </div>
@@ -172,13 +173,7 @@ export default function Sidebar() {
             </Button>
           </Link>
         </div>
-        {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
       </aside>
+    </>
   );
 }

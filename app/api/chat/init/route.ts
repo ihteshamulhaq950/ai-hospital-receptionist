@@ -5,9 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const content = typeof body?.content === "string"
-      ? body.content.trim()
-      : "";
+    const content =
+      typeof body?.content === "string" ? body.content.trim() : "";
 
     if (!content) {
       return NextResponse.json(
@@ -23,10 +22,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const sessionId = crypto.randomUUID();
@@ -63,11 +59,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { sessionId },
-      { status: 201 }
-    );
+    await supabase.rpc("increment_message_count", {
+      session_id: sessionId,
+    });
 
+    return NextResponse.json({ sessionId }, { status: 201 });
   } catch (err) {
     console.error("POST /api/chat/start error:", err);
     return NextResponse.json(

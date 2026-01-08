@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useChat } from "@/context/ChatContext";
 import {
   Bot,
@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ChatDetailPage() {
-  const router = useRouter();
   const { sessionId } = useParams<{ sessionId: string }>();
+  const [error, setError] = useState<string | null>(null);
 
   console.log("[CHAT_UI] Render ChatDetailPage", { sessionId });
 
@@ -30,13 +31,13 @@ export default function ChatDetailPage() {
     input,
     handleNewChat,
     setSidebarOpen,
-    error,
     setInput,
     loadingMessages,
     setMessages,
     setIsAssistantTyping,
-    setError,
   } = useChat();
+
+  const {user} = useAuth();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [streamProgress, setStreamProgress] = useState("");
@@ -52,16 +53,34 @@ export default function ChatDetailPage() {
     if (rawData) {
       console.log("[CHAT_UI] First message detected → SSE start");
 
-      const pendingMsg = JSON.parse(rawData);
+      try {
+        const pendingMsg = JSON.parse(rawData);
 
-      setMessages([pendingMsg]);
-      setIsAssistantTyping(true);
-      setStreamProgress("Connecting...");
+        // Validate the pending message has required fields
+        if (!pendingMsg.content_text) {
+          console.error(
+            "[CHAT_UI] Invalid pending message - missing content_text"
+          );
+          sessionStorage.removeItem(`pending_msg_${sessionId}`);
+          getChatMessagesById(sessionId);
+          return;
+        }
 
-      console.time("[CHAT_UI] FIRST_MESSAGE_STREAM");
-      handleStreamingQuery(pendingMsg.content, sessionId, true);
+        // 🔥 CRITICAL FIX
+        sessionStorage.removeItem(`pending_msg_${sessionId}`);
 
-      sessionStorage.removeItem(`pending_msg_${sessionId}`);
+        setMessages([pendingMsg]);
+        setIsAssistantTyping(true);
+        setStreamProgress("Connecting...");
+
+        console.time("[CHAT_UI] FIRST_MESSAGE_STREAM");
+
+        handleStreamingQuery(pendingMsg.content_text, sessionId, true);
+      } catch (error: unknown) {
+        console.error("[CHAT_UI] Failed to parse pending message", error);
+        sessionStorage.removeItem(`pending_msg_${sessionId}`);
+        getChatMessagesById(sessionId);
+      }
     } else {
       console.log("[CHAT_UI] Existing session → loading messages");
       getChatMessagesById(sessionId);
@@ -84,6 +103,20 @@ export default function ChatDetailPage() {
     chatSessionId: string,
     isFirstMessage: boolean = false
   ) => {
+    // Add validation at the start
+    if (!content || typeof content !== "string") {
+      console.error(
+        "[CHAT_UI] Invalid content passed to handleStreamingQuery",
+        {
+          content,
+          type: typeof content,
+        }
+      );
+      setError("Invalid message content");
+      setIsAssistantTyping(false);
+      return;
+    }
+
     console.log("[CHAT_UI] Starting streaming query", {
       chatSessionId,
       isFirstMessage,
@@ -100,11 +133,14 @@ export default function ChatDetailPage() {
           content,
           chatSessionId,
           isFirstMessage,
+          userId: user?.id,
         }),
       });
 
       if (!response.ok) {
         console.error("[CHAT_UI] SSE HTTP error", response.status);
+        const errorText = await response.text();
+        console.error("[CHAT_UI] Error response:", errorText);
         throw new Error(`HTTP ${response.status}`);
       }
 
@@ -119,74 +155,117 @@ export default function ChatDetailPage() {
       }
 
       let assistantMessageAdded = false;
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
+
         if (done) {
           console.log("[CHAT_UI] SSE stream closed");
           break;
         }
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        // Decode chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (!line.startsWith("event:")) continue;
+        // Split by double newline (SSE message separator)
+        const messages = buffer.split("\n\n");
 
-          const eventType = line.replace("event:", "").trim();
-          const nextLine = lines[lines.indexOf(line) + 1];
+        // Keep the last incomplete message in buffer
+        buffer = messages.pop() || "";
 
-          if (!nextLine?.startsWith("data:")) continue;
+        // Process complete messages
+        for (const message of messages) {
+          if (!message.trim()) continue;
 
-          const data = JSON.parse(nextLine.replace("data:", "").trim());
+          const lines = message.split("\n");
+          let eventType = "";
+          let data = "";
 
-          console.log("[CHAT_UI] SSE event:", eventType, data);
+          // Parse event and data from the message
+          for (const line of lines) {
+            if (line.startsWith("event:")) {
+              eventType = line.replace("event:", "").trim();
+            } else if (line.startsWith("data:")) {
+              data = line.replace("data:", "").trim();
+            }
+          }
 
-          switch (eventType) {
-            case "progress":
-              setStreamProgress(data.message);
-              break;
+          if (!eventType || !data) {
+            console.warn("[CHAT_UI] Incomplete SSE message:", {
+              eventType,
+              data,
+            });
+            continue;
+          }
 
-            case "assistant_response":
-              if (!assistantMessageAdded) {
-                console.log("[CHAT_UI] Assistant message received");
+          try {
+            const parsedData = JSON.parse(data);
+            console.log("[CHAT_UI] SSE event:", eventType, parsedData);
 
-                const assistantMsg: Message = {
-                  id: `temp-assistant-${Date.now()}`,
-                  chat_session_id: chatSessionId,
-                  role: "assistant",
-                  content_text: data.content_text,
-                  content_json: data.content_json || [],
-                  context_used: data.context_used || [],
-                  created_at: new Date().toISOString(),
-                };
+            switch (eventType) {
+              case "progress":
+                setStreamProgress(parsedData.message || "Processing...");
+                break;
 
-                setMessages((prev) => [...prev, assistantMsg]);
-                assistantMessageAdded = true;
+              case "assistant_response":
+                if (!assistantMessageAdded) {
+                  console.log("[CHAT_UI] Assistant message received", {
+                    contentLength: parsedData.content_text?.length,
+                    contextCount: parsedData.context_used?.length,
+                  });
+
+                  const assistantMsg: Message = {
+                    id: `temp-assistant-${Date.now()}`,
+                    chat_session_id: chatSessionId,
+                    role: "assistant",
+                    content_text: parsedData.content_text || "",
+                    content_json: parsedData.content_json || [],
+                    context_used: parsedData.context_used || [],
+                    created_at: new Date().toISOString(),
+                  };
+
+                  setMessages((prev) => [...prev, assistantMsg]);
+                  assistantMessageAdded = true;
+                  setIsAssistantTyping(false);
+                  setStreamProgress("");
+                }
+                break;
+
+              case "complete":
+                console.log("[CHAT_UI] SSE completed");
+                if (isFirstMessage) {
+                  console.timeEnd("[CHAT_UI] FIRST_MESSAGE_STREAM");
+                }
                 setIsAssistantTyping(false);
                 setStreamProgress("");
-              }
-              break;
+                break;
 
-            case "complete":
-              console.log("[CHAT_UI] SSE completed");
-              console.timeEnd("[CHAT_UI] FIRST_MESSAGE_STREAM");
-              setIsAssistantTyping(false);
-              setStreamProgress("");
-              break;
+              case "error":
+                console.error("[CHAT_UI] SSE error event", parsedData);
+                setError(parsedData.message || "An error occurred");
+                setIsAssistantTyping(false);
+                setStreamProgress("");
+                break;
 
-            case "error":
-              console.error("[CHAT_UI] SSE error event", data);
-              setError(data.message);
-              setIsAssistantTyping(false);
-              setStreamProgress("");
-              break;
+              default:
+                console.warn("[CHAT_UI] Unknown SSE event type:", eventType);
+            }
+          } catch (parseError) {
+            console.error("[CHAT_UI] Failed to parse SSE data:", {
+              data,
+              error: parseError,
+            });
           }
         }
       }
+
+      // Final cleanup
+      setIsAssistantTyping(false);
+      setStreamProgress("");
     } catch (err) {
       console.error("[CHAT_UI] Streaming failure", err);
-      setError("Failed to connect to chat service");
+      setError("Failed to connect to chat service. Please try again.");
       setIsAssistantTyping(false);
       setStreamProgress("");
     }
@@ -397,7 +476,8 @@ export default function ChatDetailPage() {
                                       </span>
                                       <span className="text-xs whitespace-nowrap">
                                         {scorePercent.toFixed(1)}%
-                                        {source.page && ` • Page ${source.page}`}
+                                        {source.page &&
+                                          ` • Page ${source.page}`}
                                       </span>
                                       <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                                         <div
