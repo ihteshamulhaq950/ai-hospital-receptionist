@@ -132,8 +132,8 @@ export default function ChatDetailPage() {
         body: JSON.stringify({
           content,
           chatSessionId,
-          isFirstMessage,
-          userId: user?.id,
+          // isFirstMessage,
+          // userId: user?.id,
         }),
       });
 

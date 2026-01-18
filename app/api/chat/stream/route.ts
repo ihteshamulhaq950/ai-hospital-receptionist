@@ -1,270 +1,153 @@
-import { generateHospitalAnswer } from "@/lib/ai/googleProvider";
+// /api/chat/stream/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { answerWithHospitalContext } from "@/lib/rag/answerWithHospitalContext";
-import { AnswerWithContextResult } from "@/types/rag";
-import { createSSEResponse } from "@/lib/utils/sse";
+import { generateHospitalAnswer } from "@/lib/ai/googleProvider";
 import { getHospitalNamespace } from "@/lib/pinecone/pineconeClient";
-import { AssistantContent } from "@/types/chat";
+import { createSSEResponse } from "@/lib/utils/sse";
+import { getChatAuth } from "@/lib/auth/chatAuth";
+import type { AssistantContent } from "@/types/chat";
+import type { AnswerWithContextResult } from "@/types/rag";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";     // ← good practice for streaming
+export const maxDuration = 45;               // ← prevent hanging (Vercel default 10s)
 
 export async function POST(req: NextRequest) {
-  console.log("[CHAT_API] Incoming request");
-
   const { stream, sendEvent, close } = createSSEResponse();
 
+  // Run the whole logic in background (detached from response)
   (async () => {
     try {
-      /* ───────────── STEP 1: REQUEST ───────────── */
-      console.log("[CHAT_API] Parsing request body");
+      // ─── 1. Parse & validate input ───
+      const body = await req.json().catch(() => ({}));
+      const { content, chatSessionId } = body;
 
-      sendEvent("progress", {
-        step: 1,
-        message: "Receiving your message...",
-        status: "processing",
-      });
-
-      const { content, chatSessionId, isFirstMessage } = await req.json();
-
-      console.log("[CHAT_API] Payload:", {
-        chatSessionId,
-        isFirstMessage,
-        contentLength: content?.length,
-      });
-
-      if (!content?.trim()) {
-        console.warn("[CHAT_API] Empty content received");
-        sendEvent("error", { message: "Empty message" });
+      if (typeof content !== "string" || !content.trim()) {
+        sendEvent("error", { message: "Message content is required" });
         close();
         return;
       }
 
-      if (!chatSessionId) {
-        console.warn("[CHAT_API] Missing chatSessionId");
-        sendEvent("error", { message: "Missing session ID" });
+      if (!chatSessionId || typeof chatSessionId !== "string") {
+        sendEvent("error", { message: "Valid chat session ID is required" });
         close();
         return;
       }
 
-      /* ───────────── AUTH ───────────── */
-      console.log("[CHAT_API] Initializing Supabase client");
+      sendEvent("progress", { step: 1, message: "Processing...", status: "processing" });
 
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        console.warn("[CHAT_API] Unauthorized request");
-        sendEvent("error", { message: "Unauthorized" });
+      // ─── 2. Authentication & authorization ───
+      const auth = await getChatAuth();
+      if (!auth.success) {
+        sendEvent("error", {
+          message: auth.error,
+          status: auth.rateLimited ? 429 : 401,
+        });
         close();
         return;
       }
 
-      console.log("[CHAT_API] Authenticated user:", user.id);
+      const { user, supabase } = auth;
 
-      /* ───────────── STEP 2: SAVE USER MESSAGE ───────────── */
-      let userMessage = null;
+      // Quick ownership check
+      const { data: session, error: sessionErr } = await supabase
+        .from("chat_sessions")
+        .select("id")
+        .eq("id", chatSessionId)
+        .eq("user_id", user.id)
+        .single();
 
-      if (!isFirstMessage) {
-        console.log("[CHAT_API] Saving user message");
+      if (sessionErr || !session) {
+        sendEvent("error", { message: "Chat session not found or access denied" });
+        close();
+        return;
+      }
 
-        sendEvent("progress", {
-          step: 2,
-          message: "Saving your message...",
-          status: "processing",
+      // ─── 3. Save user message (fire & forget style) ───
+      supabase
+        .from("chat_messages")
+        .insert({
+          chat_session_id: chatSessionId,
+          role: "user",
+          content_text: content.trim(),
+          content_json: [],
+        })
+        .then(({ error }) => {
+          if (error) console.error("Failed to persist user message:", error);
         });
 
-        const { data: userMsg, error: userError } = await supabase
-          .from("chat_messages")
-          .insert({
-            chat_session_id: chatSessionId,
-            role: "user",
-            content_text: content.trim(),
-            content_json: [],
-          })
-          .select()
-          .single();
+      // ─── 4. RAG + Generation ───
+      sendEvent("progress", { step: 2, message: "Searching hospital knowledge...", status: "processing" });
 
-        if (userError || !userMsg) {
-          console.error("[CHAT_API] User message insert failed", userError);
-          sendEvent("error", { message: "Failed to save message" });
-          close();
-          return;
-        }
+      let assistantContent: AssistantContent = {
+        answer: "I'm having trouble right now. Please try again shortly.",
+        suggestions: [],
+      };
 
-        userMessage = userMsg;
-
-        console.log("[CHAT_API] User message saved:", userMsg.id);
-
-        sendEvent("progress", {
-          step: 2,
-          message: "Message saved",
-          status: "completed",
-        });
-      }
-
-      /* ───────────── STEP 3: RAG ───────────── */
-      console.log("[CHAT_API] Starting RAG pipeline");
-      console.time("[CHAT_API] RAG_TIME");
-
-      sendEvent("progress", {
-        step: 3,
-        message: "Searching knowledge base...",
-        status: "processing",
-      });
-
-      const namespace = getHospitalNamespace();
-      console.log("[CHAT_API] Pinecone namespace:", namespace);
-
-      let assistantContent: AssistantContent;
       let contextUsed: unknown[] = [];
 
       try {
-        const result: AnswerWithContextResult =
-          await answerWithHospitalContext({
-            content: content.trim(),
-            namespace,
-            generateAnswer: generateHospitalAnswer,
-          });
+        const result = await answerWithHospitalContext({
+          content: content.trim(),
+          namespace: getHospitalNamespace(),
+          generateAnswer: generateHospitalAnswer,
+        }) as AnswerWithContextResult;
 
         assistantContent = {
           ...result.assistantContent,
-          suggestions: result.assistantContent.suggestions || [],
-        };
-        contextUsed = result.contextUsed || [];
-
-        console.timeEnd("[CHAT_API] RAG_TIME");
-        console.log("[CHAT_API] RAG success", {
-          suggestionsCount: assistantContent?.suggestions?.length,
-          contextCount: contextUsed.length,
-        });
-
-        sendEvent("progress", {
-          step: 3,
-          message: "Answer generated",
-          status: "completed",
-        });
-      } catch (ragError) {
-        console.error("[CHAT_API] RAG failed", ragError);
-
-        assistantContent = {
-          answer:
-            "I'm having trouble accessing the knowledge base right now. Please try again in a moment.",
-          suggestions: [],
+          suggestions: result.assistantContent.suggestions ?? [],
         };
 
-        contextUsed = [];
+        contextUsed = result.contextUsed ?? [];
 
-        sendEvent("progress", {
-          step: 3,
-          message: "Using fallback response",
-          status: "warning",
-        });
+        sendEvent("progress", { step: 2, message: "Answer ready", status: "completed" });
+      } catch (err) {
+        console.error("RAG / generation failed:", err);
+        sendEvent("progress", { step: 2, message: "Using fallback answer", status: "warning" });
       }
 
-      /* ───────────── STEP 4: STREAM RESPONSE ───────────── */
-      console.log("[CHAT_API] Streaming assistant response");
-
+      // ─── 5. Stream answer to client ───
       sendEvent("assistant_response", {
-        content_text: assistantContent.answer || assistantContent,
-        content_json: assistantContent.suggestions || [],
+        content_text: assistantContent.answer ?? "",
+        content_json: assistantContent.suggestions ?? [],
         context_used: contextUsed,
       });
 
-      /* ───────────── STEP 5: SAVE ASSISTANT MESSAGE ───────────── */
-      console.log("[CHAT_API] Saving assistant message");
-
-      sendEvent("progress", {
-        step: 4,
-        message: "Saving response...",
-        status: "processing",
-      });
-
-      try {
-        const { data: assistantMessage, error: assistantError } =
-          await supabase
-            .from("chat_messages")
-            .insert({
-              chat_session_id: chatSessionId,
-              role: "assistant",
-              content_text:
-                typeof assistantContent === "string"
-                  ? assistantContent
-                  : assistantContent.answer || "",
-              content_json:
-                typeof assistantContent === "object" &&
-                assistantContent.suggestions
-                  ? assistantContent.suggestions
-                  : [],
-              context_used: contextUsed,
-            })
-            .select()
-            .single();
-
-        if (assistantError || !assistantMessage) {
-          console.error(
-            "[CHAT_API] Assistant message insert failed",
-            assistantError
-          );
-
-          sendEvent("progress", {
-            step: 4,
-            message: "Response saved with warnings",
-            status: "warning",
-          });
-        } else {
-          console.log(
-            "[CHAT_API] Assistant message saved:",
-            assistantMessage.id
-          );
-
-          sendEvent("progress", {
-            step: 4,
-            message: "Response saved successfully",
-            status: "completed",
-          });
-
-          await supabase.rpc("increment_message_count", {
-            session_id: chatSessionId,
-          });
-        }
-      } catch (dbError) {
-        console.error("[CHAT_API] DB exception", dbError);
-
-        sendEvent("progress", {
-          step: 4,
-          message: "Response delivered (save failed)",
-          status: "warning",
+      // ─── 6. Save assistant message (fire & forget + count) ───
+      supabase
+        .from("chat_messages")
+        .insert({
+          chat_session_id: chatSessionId,
+          role: "assistant",
+          content_text: assistantContent.answer ?? "",
+          content_json: assistantContent.suggestions ?? [],
+          context_used: contextUsed,
+        })
+        .then(async ({ error }) => {
+          if (!error) {
+            await supabase.rpc("increment_message_count", { session_id: chatSessionId });
+          } else {
+            console.error("Failed to save assistant message:", error);
+          }
         });
-      }
 
-      /* ───────────── COMPLETE ───────────── */
-      console.log("[CHAT_API] Request completed successfully");
-
-      sendEvent("complete", {
-        message: "Chat response complete",
-        success: true,
-      });
-
+      // ─── Done ───
+      sendEvent("complete", { success: true });
       close();
-    } catch (error: unknown) {
-      console.error("[CHAT_API] Fatal error", error);
-
-      sendEvent("error", {
-        message: (error as Error).message || "Internal Server Error",
-      });
-
+    } catch (err) {
+      console.error("[stream-api] Critical failure:", err);
+      sendEvent("error", { message: "Internal server error" });
       close();
     }
   })();
 
   return new NextResponse(stream, {
+    status: 200,
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
+      "X-Accel-Buffering": "no",           // ← important for nginx reverse proxy
     },
   });
 }
