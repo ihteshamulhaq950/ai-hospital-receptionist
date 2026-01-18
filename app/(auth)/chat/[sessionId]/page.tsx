@@ -17,27 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 import { useAuth } from "@/context/AuthContext";
-import { Metadata } from "next";
-
-type PageParams = {
-  sessionId: string;
-};
-
-type Props = {
-  params: PageParams;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // Dynamic title per session
-  return {
-    title: `Chat Session - ${params.sessionId}`,
-    description: "Private chat session with CareLink AI Hospital Assistant",
-    robots: {
-      index: false, // do not index chat pages
-      follow: false,
-    },
-  };
-}
 
 export default function ChatDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
