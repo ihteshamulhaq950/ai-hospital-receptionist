@@ -11,7 +11,6 @@ export async function updateSession(request: NextRequest) {
 
   const isProtected = 
     pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/chat') ||
     pathname.startsWith('/api')
 
   // With Fluid compute, don't put this client in a global environment
