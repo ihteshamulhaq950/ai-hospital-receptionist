@@ -1,8 +1,14 @@
 import React from "react";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardAuthGuard } from "@/components/dashboard/DashboardAuthGuard";
-// import { AuthProvider } from "@/provider/AuthContext";
-// import { ChatProvider } from "@/provider/ChatContext";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function DashboardLayout({
   children,

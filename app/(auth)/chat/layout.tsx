@@ -2,7 +2,15 @@
 import Sidebar from "@/components/shared/Sidebar";
 import { ChatProvider } from "@/context/ChatContext";
 import { ChatAuthGuard } from "@/components/chat/ChatAuthGuard";
-// import { AuthProvider } from "@/provider/AuthContext";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Chat",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ChatLayout({
   children,

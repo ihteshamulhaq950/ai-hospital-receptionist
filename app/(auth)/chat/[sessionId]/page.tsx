@@ -17,6 +17,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 import { useAuth } from "@/context/AuthContext";
+import { Metadata } from "next";
+
+type Props = {
+  params: { sessionId: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  return {
+    title: "Chat Session",
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 export default function ChatDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
