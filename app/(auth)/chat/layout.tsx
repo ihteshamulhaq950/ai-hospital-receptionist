@@ -18,15 +18,18 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   return (
-    // <AuthProvider>
-      <ChatAuthGuard>
-        <ChatProvider>
-          <div className="flex h-dvh bg-slate-50 font-sans relative">
-            <Sidebar />
+    <ChatAuthGuard>
+      <ChatProvider>
+        <div className="min-h-screen flex bg-background text-foreground">
+          {/* Sidebar */}
+          <Sidebar />
+
+          {/* Chat Area */}
+          <main className="flex-1 flex flex-col overflow-hidden">
             {children}
-          </div>
-        </ChatProvider>
-      </ChatAuthGuard>
-    // {/* </AuthProvider> */}
+          </main>
+        </div>
+      </ChatProvider>
+    </ChatAuthGuard>
   );
 }
