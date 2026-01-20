@@ -130,7 +130,7 @@ export default function PDFsPage() {
       setIsDummyData(false);
 
       try {
-        const url = new URL("/api/dashboard/pdfs", window.location.origin);
+        const url = new URL("/api/dashboard/pdf", window.location.origin);
         url.searchParams.set("page", pagination.page.toString());
         if (debouncedSearch) {
           url.searchParams.set("search", debouncedSearch);

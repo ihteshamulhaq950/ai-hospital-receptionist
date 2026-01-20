@@ -73,7 +73,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/dashboard/pdfs/${resolvedParams.pdfDetailId}`)
+      const response = await fetch(`/api/dashboard/pdf/${resolvedParams.pdfDetailId}`)
       const result = await response.json()
 
       if (response.ok) {
@@ -96,7 +96,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       setDeleting(true)
       setError(null)
       
-      const response = await fetch(`/api/dashboard/pdfs/${resolvedParams.pdfDetailId}`, {
+      const response = await fetch(`/api/dashboard/pdf/${resolvedParams.pdfDetailId}`, {
         method: "DELETE",
       })
 
@@ -127,7 +127,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       setError(null)
       
       const response = await fetch(
-        `/api/dashboard/pdfs/${resolvedParams.pdfDetailId}/cleanup-storage-db`,
+        `/api/dashboard/pdf/${resolvedParams.pdfDetailId}/cleanup-storage-db`,
         {
           method: "DELETE",
         }
@@ -159,7 +159,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       setError(null)
       
       const response = await fetch(
-        `/api/dashboard/pdfs/${resolvedParams.pdfDetailId}/cleanup-database`,
+        `/api/dashboard/pdf/${resolvedParams.pdfDetailId}/cleanup-database`,
         {
           method: "DELETE",
         }

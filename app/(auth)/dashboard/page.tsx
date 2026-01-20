@@ -78,7 +78,7 @@ export default function DashboardPage() {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/dashboard/stats");
+      const response = await fetch("/api/dashboard");
       const result = await response.json();
 
       if (result.success && result.data) {
