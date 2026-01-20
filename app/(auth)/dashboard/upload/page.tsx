@@ -177,7 +177,7 @@ export default function UploadPage() {
 
                 // Redirect after success
                 setTimeout(() => {
-                  router.push("/dashboard/pdfs");
+                  router.push("/dashboard/pdf");
                 }, 2000);
               } else if (eventType === "error") {
                 throw new Error(data.message);
