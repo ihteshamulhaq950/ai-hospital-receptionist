@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Embedded PDFs", href: "/dashboard/pdfs", icon: FileText },
+  { name: "Embedded PDFs", href: "/dashboard/pdf", icon: FileText },
   { name: "Upload PDF", href: "/dashboard/upload", icon: Upload },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
 ];
