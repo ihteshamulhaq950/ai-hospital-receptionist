@@ -103,7 +103,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       const result = await response.json()
 
       if (response.ok) {
-        router.push("/dashboard/pdfs")
+        router.push("/dashboard/pdf")
       } else {
         setError(result.error || "Failed to delete PDF")
         fetchPDFDetails()
@@ -136,7 +136,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       const result = await response.json()
 
       if (response.ok) {
-        router.push("/dashboard/pdfs")
+        router.push("/dashboard/pdf")
       } else {
         setError(result.error || "Failed to cleanup")
         fetchPDFDetails()
@@ -168,7 +168,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       const result = await response.json()
 
       if (response.ok) {
-        router.push("/dashboard/pdfs")
+        router.push("/dashboard/pdf")
       } else {
         setError(result.error || "Failed to delete from database")
       }
@@ -200,7 +200,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
         <div className="lg:sticky mt-14 lg:top-0 lg:z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b pb-4 -mx-6 px-6 pt-6 mb-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
-              <Link href="/dashboard/pdfs">
+              <Link href="/dashboard/pdf">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
@@ -214,7 +214,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
           </AlertDescription>
         </Alert>
         <Button asChild>
-          <Link href="/dashboard/pdfs">Back to PDFs</Link>
+          <Link href="/dashboard/pdf">Back to PDFs</Link>
         </Button>
       </div>
     )
@@ -259,7 +259,7 @@ export default function PDFDetailPage({ params }: { params: Promise<{ pdfDetailI
       <div className="lg:sticky mt-14 lg:top-0 lg:z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b pb-4 -mx-6 px-6 pt-6 mb-6">
         <div className="flex items-center gap-2 sm:gap-4">
           <Button variant="ghost" size="icon" asChild className="shrink-0">
-            <Link href="/dashboard/pdfs">
+            <Link href="/dashboard/pdf">
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Link>
           </Button>
