@@ -172,7 +172,7 @@ export function PDFTable({ pdfs: initialPdfs }: PDFTableProps) {
                         </span>
                       )}
                       <Button asChild variant="ghost" size="sm">
-                        <Link href={`/dashboard/pdfs/${pdf.id}`}>View</Link>
+                        <Link href={`/dashboard/pdf/${pdf.id}`}>View</Link>
                       </Button>
                     </div>
                   </div>
@@ -248,7 +248,7 @@ export function PDFTable({ pdfs: initialPdfs }: PDFTableProps) {
                 </td>
                 <td className="p-4 text-right">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href={`/dashboard/pdfs/${pdf.id}`}>View Details</Link>
+                    <Link href={`/dashboard/pdf/${pdf.id}`}>View Details</Link>
                   </Button>
                 </td>
               </tr>
