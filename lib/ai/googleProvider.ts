@@ -1,3 +1,60 @@
+// lib/ai/googleProvider.ts (updated)
+
+
+// export async function generateHospitalAnswer(
+//   userQuery: string,
+//   context: string
+// ): Promise<{ answer: string; suggestions: string[] }> {
+//   const hasContext = context.trim().length > 0;
+
+//   const systemPrompt = hasContext
+//     ? `You are a helpful hospital information assistant. Answer the user's question using ONLY the provided context from the hospital's knowledge base.
+
+// Rules:
+// - Be accurate, clear, and concise
+// - Use ONLY information from the context
+// - If the context doesn't fully answer the question, say so honestly
+// - Format the answer in a friendly, professional manner
+// - Provide 3 relevant follow-up question suggestions
+// - DO NOT make up information
+
+// Context:
+// ${context}
+
+// User Question: ${userQuery}
+
+// Respond with ONLY valid JSON (no markdown):
+// {
+//   "answer": "your detailed answer here",
+//   "suggestions": ["question 1", "question 2", "question 3"]
+// }`
+//     : `You are a helpful hospital information assistant. The user asked a question but no relevant information was found in the knowledge base.
+
+// User Question: ${userQuery}
+
+// Respond politely that you don't have that specific information, and provide 3-4 helpful alternative questions they might want to ask about the hospital.
+
+// Respond with ONLY valid JSON (no markdown):
+// {
+//   "answer": "polite response acknowledging you don't have that info",
+//   "suggestions": ["question 1", "question 2", "question 3", "question 4"]
+// }`;
+
+//   try {
+//     // Your existing Gemini API call here
+//     const response = await callGeminiAPI(systemPrompt);
+//     const cleanResponse = response.replace(/```json\n?|\n?```/g, "").trim();
+//     return JSON.parse(cleanResponse);
+//   } catch (error) {
+//     console.error("LLM generation error:", error);
+//     return {
+//       answer: "I encountered an error generating a response. Please try again.",
+//       suggestions: [],
+//     };
+//   }
+// }
+
+
 import { GenerateContentParameters, GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({
