@@ -1,40 +1,53 @@
 import { createClient } from "./server";
 import { NextResponse, type NextRequest } from "next/server";
 
-
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
   const pathname = request.nextUrl.pathname;
 
-  const isProtected = 
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/api')
-
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
-  const supabase = await createClient()
-
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // 1. Define Route Logic
+  const isAdminRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/api/dashboard');
   
-  const { data } = await supabase.auth.getClaims()
+  // Specific check: /chat is public, but /chat/[id] or /api/chat requires a user
+  const isProtectedChat = (pathname.startsWith('/chat/') || pathname.startsWith('/api/chat')) && pathname !== '/chat';
+  
+  const isAuthPage = pathname === '/login' || pathname === '/callback';
 
-  const user = data?.claims
-
-  console.log("✅ Proxy user claims:", user)
-
-  if (
-    isProtected && 
-    !user
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  // CASE 3: Redirect authenticated users AWAY from Login/Callback
+  if (isAuthPage && user && user.is_anonymous) {
+    const url = request.nextUrl.clone();
+    // Non-anonymous (Admin) -> dashboard | Anonymous -> /chat
+    url.pathname = !user.is_anonymous ? '/dashboard' : '/chat';
+    return NextResponse.redirect(url);
   }
 
-  return supabaseResponse
+  // CASE 1: Admin Route Protection (/dashboard and /api/dashboard)
+  if (isAdminRoute) {
+    // Block if no user OR user is anonymous
+    if (!user || user.is_anonymous) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // CASE 2: Protected Chat & API (/chat/[id] or /api/chat)
+  // Allows both Admin and Anonymous users
+  if (isProtectedChat) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Final Response: Allow /chat (base), /login, and /callback to pass through naturally
+  const response = NextResponse.next({ request });
+  if (user) {
+    response.headers.set('x-user-id', user.sub as string);
+  }
+
+  return response;
 }

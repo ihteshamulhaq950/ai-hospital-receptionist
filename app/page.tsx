@@ -361,10 +361,10 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/login"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
-                    Departments
+                    Login
                   </Link>
                 </li>
                 <li>

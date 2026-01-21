@@ -29,7 +29,9 @@ export async function getChatAuth(): Promise<ChatAuthResult> {
   const supabase = await createClient();
 
   // 1. Check if user is authenticated
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data, error: authError } = await supabase.auth.getClaims();
+  
+  const user = data?.claims ? data.claims : null;
 
   if (authError || !user) {
     return { success: false, error: 'Not authenticated', supabase };
