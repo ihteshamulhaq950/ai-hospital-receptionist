@@ -294,7 +294,7 @@ export default function DashboardPage() {
                   {stats.recentUploads.map((file, i) => (
                     <Link
                       key={file.id}
-                      href={`/dashboard/pdfs/${file.id}`}
+                      href={`/dashboard/pdf/${file.id}`}
                       className="flex items-center gap-4 hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors"
                     >
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg border bg-muted">
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                   className="w-full mt-6 text-primary"
                   asChild
                 >
-                  <Link href="/dashboard/pdfs">View All Documents</Link>
+                  <Link href="/dashboard/pdf">View All Documents</Link>
                 </Button>
               </>
             )}
