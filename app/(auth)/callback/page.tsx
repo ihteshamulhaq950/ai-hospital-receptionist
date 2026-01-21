@@ -24,32 +24,35 @@ export default function AuthCallbackPage() {
 
   const handleAuthCallback = async () => {
     try {
-      // Get hash parameters from URL
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-      const type = hashParams.get('type');
-      const error = hashParams.get('error');
-      const errorDescription = hashParams.get('error_description');
+      // Get query parameters from URL
+      const queryParams = new URLSearchParams(window.location.search);
+      const tokenHash = queryParams.get('token_hash');
+      const type = queryParams.get('type');
+      const error = queryParams.get('error');
+      const errorDescription = queryParams.get('error_description');
 
-      console.log('Auth callback:', { type, hasToken: !!accessToken, error });
+      console.log('Auth callback:', { 
+        tokenHash: !!tokenHash, 
+        type, 
+        error 
+      });
 
       // Handle errors in URL
       if (error) {
         throw new Error(errorDescription || error);
       }
 
-      if (!accessToken) {
-        throw new Error('No access token found in URL');
+      if (!tokenHash) {
+        throw new Error('No authentication token found in URL');
       }
 
-      // Set the session with the tokens
-      const { data, error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || '',
+      // Verify the token hash
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: type === 'invite' ? 'invite' : type === 'recovery' ? 'recovery' : 'magiclink',
       });
 
-      if (sessionError) throw sessionError;
+      if (verifyError) throw verifyError;
 
       if (data.user) {
         console.log('User authenticated:', data.user.email);
