@@ -150,13 +150,15 @@ export default function HospitalHomePage() {
                 Find a Doctor
               </Button>
               {!isAnonymous && user && user.invited_at && (
-                <Button
+                <Link href={'/dashboard'}>
+                  <Button
                   size="lg"
                   className="w-full sm:w-auto px-8 bg-linear-to-r from-blue-600 to-blue-700 hover:shadow-lg hover:shadow-blue-500/50 transition-shadow relative group"
                 >
                   <div className="absolute inset-0 rounded-lg bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
                   <span className="relative">Go to Dashboard</span>
                 </Button>
+                </Link>
               )}
             </div>
           </div>
