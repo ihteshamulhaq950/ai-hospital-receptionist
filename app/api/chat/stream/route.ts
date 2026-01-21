@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         .from("chat_sessions")
         .select("id")
         .eq("id", chatSessionId)
-        .eq("user_id", user.id)
+        .eq("user_id", user.sub)
         .single();
 
       if (sessionErr || !session) {

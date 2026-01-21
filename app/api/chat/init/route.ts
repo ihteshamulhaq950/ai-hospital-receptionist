@@ -18,8 +18,11 @@ export async function POST(req: NextRequest) {
 
     const { user, supabase } = auth;
 
+    console.log("User inside init is:", user);
+    
+
     // Parse title from request body (optional)
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json();
     const { title } = body;
 
     const finalTitle =
@@ -27,12 +30,15 @@ export async function POST(req: NextRequest) {
         ? title.trim().slice(0, 120)
         : "New Chat";
 
+    console.log("finalTitle is:", finalTitle);
+    
+
     // Insert → let DB generate id
     // .select() returns the inserted row (including the generated id)
     const { data, error } = await supabase
       .from("chat_sessions")
       .insert({
-        user_id: user.id,
+        user_id: user.sub,
         title: finalTitle,
         // created_at will be auto-set if you have a default
       })
@@ -41,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("[chat/init] Insert failed", {
-        userId: user.id,
+        userId: user.sub,
         errorCode: error.code,
         errorMessage: error.message,
       });
