@@ -1,12 +1,7 @@
+// ENHANCED RAG SEARCH (no LLM needed - pure vector search)
 // lib/rag/enhancedRAG.ts
 
 import { ContextUsedItem } from "@/types/rag";
-
-interface RAGResult {
-  answer: string;
-  suggestions: string[];
-  contextUsed: ContextUsedItem[];
-}
 
 export async function enhancedRAGSearch({
   queries,
@@ -17,6 +12,8 @@ export async function enhancedRAGSearch({
   namespace: any;
   topK?: number;
 }): Promise<{ context: string; contextUsed: ContextUsedItem[] }> {
+  console.log("[RAG Search] Queries:", queries);
+  
   const allHits: any[] = [];
   const seenIds = new Set<string>();
 
@@ -28,10 +25,11 @@ export async function enhancedRAGSearch({
           topK,
           inputs: { text: query },
         },
-        fields: ["text", "page"],
+        fields: ["text"],
       });
 
       const hits = searchResult?.result?.hits ?? [];
+      console.log(`[RAG Search] Found ${hits.length} hits for "${query}"`);
       
       // Deduplicate by ID
       for (const hit of hits) {
@@ -41,13 +39,18 @@ export async function enhancedRAGSearch({
         }
       }
     } catch (error) {
-      console.error(`Search failed for query "${query}":`, error);
+      console.error(`[RAG Search] Failed for query "${query}":`, error);
     }
   }
 
-  // Sort by score and take top results
+  // Sort by relevance score
   allHits.sort((a, b) => (b._score ?? 0) - (a._score ?? 0));
-  const topHits = allHits.slice(0, topK * 2); // Allow more context for complex queries
+  
+  // Take top results (allow more for complex queries)
+  const maxResults = Math.min(topK * Math.max(queries.length, 2), 10);
+  const topHits = allHits.slice(0, maxResults);
+
+  console.log(`[RAG Search] Returning ${topHits.length} total hits`);
 
   if (topHits.length === 0) {
     return { context: "", contextUsed: [] };
