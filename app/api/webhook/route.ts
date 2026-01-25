@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'CareLink2025Secure!Token';
+const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
 
 // Webhook verification (GET request from Meta)
 export async function GET(request: NextRequest) {
@@ -19,6 +22,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Receive incoming messages (POST request from Meta)
+// POST - Receive messages
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -26,42 +30,111 @@ export async function POST(request: NextRequest) {
     console.log('📨 Webhook received:', JSON.stringify(body, null, 2));
 
     if (body.object === 'whatsapp_business_account') {
-      body.entry?.forEach((entry: any) => {
+      for (const entry of body.entry || []) {
         const changes = entry.changes[0];
         const value = changes.value;
 
-        // Handle incoming messages
         if (value.messages) {
           const message = value.messages[0];
-          const from = message.from; // Customer's phone number
-          const messageBody = message.text?.body; // Message text
+          const from = message.from;
+          const messageBody = message.text?.body;
           const messageId = message.id;
 
           console.log(`📞 From: ${from}`);
           console.log(`💬 Message: ${messageBody}`);
-          console.log(`🆔 Message ID: ${messageId}`);
 
-          // TODO: Process with your AI logic here
-          // Example: sendToAI(from, messageBody);
-          // Then send response back to customer
+          // Send automatic reply
+          if (messageBody) {
+            await sendWhatsAppMessage(from, messageBody);
+          }
         }
-
-        // Handle message status updates (delivered, read, etc.)
-        if (value.statuses) {
-          const status = value.statuses[0];
-          console.log(`📊 Status update: ${status.status}`);
-        }
-      });
-
-      return NextResponse.json({ success: true }, { status: 200 });
+      }
     }
 
-    return NextResponse.json({ error: 'Not a WhatsApp event' }, { status: 404 });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('❌ Webhook error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('❌ Error:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
+
+// Function to send WhatsApp message
+async function sendWhatsAppMessage(to: string, userMessage: string) {
+  try {
+    // Simple response for now (you'll add AI logic later)
+    const replyMessage = `Thank you for contacting Care Link Hospital! You said: "${userMessage}". Our AI assistant is being set up. How can we help you today?`;
+
+    const response = await fetch(
+      `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: to,
+          type: 'text',
+          text: {
+            preview_url: false,
+            body: replyMessage
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+    
+    if (response.ok) {
+      console.log('✅ Message sent successfully:', data);
+    } else {
+      console.error('❌ Failed to send message:', data);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('❌ Error sending message:', error);
+    throw error;
+  }
+}
+// ```
+
+// ---
+
+// ## **Step 4: Add Environment Variables to Vercel**
+
+// 1. Go to **Vercel Dashboard** → Your Project → **Settings** → **Environment Variables**
+
+// 2. Add these variables:
+// ```
+// WHATSAPP_VERIFY_TOKEN = CareLink2025Secure!Token
+// WHATSAPP_ACCESS_TOKEN = [Your permanent access token from System User]
+// WHATSAPP_PHONE_NUMBER_ID = [Your phone number ID from WhatsApp Manager]
+// ```
+
+// **Where to find these values:**
+
+// - **WHATSAPP_ACCESS_TOKEN**: The permanent token you generated from System User
+// - **WHATSAPP_PHONE_NUMBER_ID**: 
+//   - Go to WhatsApp Manager → Your phone number
+//   - Look for "Phone number ID" (looks like: `123456789012345`)
+
+// 3. **Redeploy** your app (or Vercel will auto-redeploy)
+
+// ---
+
+// ## **Step 5: Test the Complete Flow**
+
+// 1. **Send a message** from your phone to the business number:
+// ```
+//    Hello, I need an appointment
+// ```
+
+// 2. **You should receive an automatic reply**:
+// ```
+//    Thank you for contacting Care Link Hospital! You said: "Hello, I need an appointment". Our AI assistant is being set up. How can we help you today?
 
 
 // ============================================================================
