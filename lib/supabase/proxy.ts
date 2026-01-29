@@ -16,10 +16,10 @@ export async function updateSession(request: NextRequest) {
   const isAuthPage = pathname === '/login' || pathname === '/callback';
 
   // CASE 3: Redirect authenticated users AWAY from Login/Callback
-  if (isAuthPage && user && user.is_anonymous) {
+  if (isAuthPage && user) {
     const url = request.nextUrl.clone();
     // Non-anonymous (Admin) -> dashboard | Anonymous -> /chat
-    url.pathname = !user.is_anonymous ? '/dashboard' : '/chat';
+    url.pathname = '/' + (user.is_anonymous ? 'chat' : 'dashboard');
     return NextResponse.redirect(url);
   }
 

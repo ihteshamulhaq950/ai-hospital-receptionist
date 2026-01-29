@@ -38,7 +38,7 @@ export async function getChatAuth(): Promise<ChatAuthResult> {
   }
 
   // 2. Check rate limit
-  const { success: rateLimitSuccess } = await rateLimit.limit(user.id);
+  const { success: rateLimitSuccess } = await rateLimit.limit(user.sub);
   
   if (!rateLimitSuccess) {
     return { 

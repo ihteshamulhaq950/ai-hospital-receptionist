@@ -1,145 +1,295 @@
 // app/api/dashboard/analytics/route.ts
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
+import { NextRequest, NextResponse } from "next/server";
+import {getDashboardAuth} from "@/lib/auth/dashboardAuth";
 
-export async function GET() {
+type TimeRange = "today" | "yesterday" | "last4days" | "week" | "overall";
+
+interface DailyAnalytics {
+  date_day: string;
+  day_name: string;
+  query_count: number;
+  satisfaction_score: number;
+}
+
+export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
-    const supabase = await createClient();
+    const auth = await getDashboardAuth();
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error },
+        {status: 400}
+      ) 
+    }
 
-    // Define 7-day range
-    const now = new Date();
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(now.getDate() - 7);
+    const { supabase } = auth;
+    const searchParams = request.nextUrl.searchParams;
+    const range = (searchParams.get("range") || "week") as TimeRange;
 
-    const isoSevenDaysAgo = sevenDaysAgo.toISOString();
+    const { startDate, endDate } = getDateRange(range);
 
-    // -----------------------------
-    // 1️⃣ Total queries
-    // -----------------------------
-    const { count: totalQueries } = await supabase
-      .from("chat_messages")
-      .select("*", { count: "exact", head: true })
-      .gte("created_at", isoSevenDaysAgo);
+    console.log(`[ANALYTICS] Fetching ${range} analytics from ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
-    // -----------------------------
-    // 2️⃣ Weekly queries & satisfaction
-    // -----------------------------
-    const { data: weeklyData } = await supabase
-      .from("chat_messages")
-      .select(
-        `
-        created_at,
-        user_feedback,
-        content_json
-      `
-      )
-      .gte("created_at", isoSevenDaysAgo);
+    // Execute all queries in parallel for maximum performance
+    const [summaryResult, dailyResult, intentResult] = await Promise.all([
+      supabase.rpc("get_analytics_summary", {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+      }),
+      supabase.rpc("get_daily_analytics", {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+      }),
+      supabase.rpc("get_intent_sample", {
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        sample_limit: 1000,
+      }),
+    ]);
 
-    // Initialize weekly map
-    const weekDays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    const weeklyMap: Record<string, { count: number; satisfactionSum: number; satisfactionCount: number }> = {};
-    weekDays.forEach(day => weeklyMap[day] = { count: 0, satisfactionSum: 0, satisfactionCount: 0 });
+    // Handle errors
+    if (summaryResult.error) {
+      console.error("[ANALYTICS] Summary error:", summaryResult.error);
+      throw new Error("Failed to fetch summary");
+    }
 
-    // Count by day and compute satisfaction
-    weeklyData?.forEach(msg => {
-      const day = weekDays[new Date(msg.created_at).getDay()];
-      weeklyMap[day].count += 1;
+    if (dailyResult.error) {
+      console.error("[ANALYTICS] Daily analytics error:", dailyResult.error);
+      throw new Error("Failed to fetch daily analytics");
+    }
 
-      if (msg.user_feedback !== null && msg.user_feedback !== undefined) {
-        let value = 0;
-        if (msg.user_feedback === 1) value = 100;
-        else if (msg.user_feedback === 0) value = 50;
-        else value = 0;
+    if (intentResult.error) {
+      console.error("[ANALYTICS] Intent sample error:", intentResult.error);
+      throw new Error("Failed to fetch intent sample");
+    }
 
-        weeklyMap[day].satisfactionSum += value;
-        weeklyMap[day].satisfactionCount += 1;
-      }
-    });
+    const summary = summaryResult.data || {};
+    const dailyData = (dailyResult.data || []) as DailyAnalytics[];
+    const intentSample = (intentResult.data || []) as Array<{ content_text: string }>;
 
-    const weeklyQueries = weekDays.map(day => {
-      const { count, satisfactionSum, satisfactionCount } = weeklyMap[day];
-      return {
-        day,
-        count,
-        satisfaction: satisfactionCount ? Math.round(satisfactionSum / satisfactionCount) : 0
-      };
-    });
+    const totalQueries = summary.total_queries || 0;
+    const hasData = totalQueries > 0;
 
-    // -----------------------------
-    // 3️⃣ Intent distribution
-    // -----------------------------
-    const intentCounts: Record<string, number> = {};
+    // Return empty state if no data
+    if (!hasData) {
+      console.log(`[ANALYTICS] No data found for ${range}`);
+      return NextResponse.json({
+        stats: {
+          totalQueries: 0,
+          avgDailyQueries: 0,
+          topIntent: { name: "N/A", percentage: 0 },
+          userSatisfaction: 0,
+        },
+        weeklyVolume: [],
+        intentDistribution: [],
+        satisfactionTrend: [],
+        hasData: false,
+        executionTime: Date.now() - startTime,
+      });
+    }
 
-    weeklyData?.forEach(msg => {
-      const intent = msg.content_json?.[0] || "General";
-      if (!intentCounts[intent]) intentCounts[intent] = 0;
-      intentCounts[intent] += 1;
-    });
+    // Calculate statistics
+    const days = calculateDays(range);
+    const avgDailyQueries = Math.round(totalQueries / days);
 
-    const intentDistribution = Object.entries(intentCounts)
-      .map(([intent, count]) => ({ intent, count }))
-      .sort((a, b) => b.count - a.count);
-
-    // -----------------------------
-    // 4️⃣ Summary stats
-    // -----------------------------
-    // Avg daily queries
-    const avgDailyQueries = totalQueries ? Math.round(totalQueries / 7) : 0;
-
-    // Top intent
-    const topIntent = intentDistribution[0] || { intent: "N/A", count: 0 };
-    const topIntentPercentage = totalQueries ? Math.round((topIntent.count / totalQueries) * 100) : 0;
-
-    // User satisfaction overall
-    let totalSatisfactionSum = 0;
-    let totalSatisfactionCount = 0;
-    weeklyData?.forEach(msg => {
-      if (msg.user_feedback !== null && msg.user_feedback !== undefined) {
-        let value = 0;
-        if (msg.user_feedback === 1) value = 100;
-        else if (msg.user_feedback === 0) value = 50;
-        else value = 0;
-
-        totalSatisfactionSum += value;
-        totalSatisfactionCount += 1;
-      }
-    });
-
-    const userSatisfaction = totalSatisfactionCount
-      ? Math.round(totalSatisfactionSum / totalSatisfactionCount)
+    const totalFeedback = summary.total_feedback || 0;
+    const positiveFeedback = summary.positive_feedback || 0;
+    const userSatisfaction = totalFeedback > 0
+      ? Math.round((positiveFeedback / totalFeedback) * 100)
       : 0;
 
-    // -----------------------------
-    // 5️⃣ Return JSON response
-    // -----------------------------
-    return NextResponse.json({
-      success: true,
-      summary: {
-        totalQueries: totalQueries || 0,
-        avgDailyQueries,
-        topIntent: {
-          name: topIntent.intent,
-          percentage: topIntentPercentage
-        },
-        userSatisfaction: {
-          value: userSatisfaction,
-          delta: 0 // optional: compute vs previous period
+    // Process daily data for charts
+    const { weeklyVolume, satisfactionTrend } = processDailyData(dailyData, range);
+
+    // Process intent distribution
+    const intentDistribution = processIntentDistribution(intentSample, totalQueries);
+
+    const topIntent = intentDistribution.length > 0
+      ? {
+          name: intentDistribution[0].intent,
+          percentage: Math.round((intentDistribution[0].count / totalQueries) * 100),
         }
+      : { name: "N/A", percentage: 0 };
+
+    const executionTime = Date.now() - startTime;
+    console.log(`[ANALYTICS] Completed in ${executionTime}ms`);
+
+    return NextResponse.json({
+      stats: {
+        totalQueries,
+        avgDailyQueries,
+        topIntent,
+        userSatisfaction,
       },
-      weeklyQueries,
-      intentDistribution,
-      meta: {
-        range: "last_7_days",
-        generatedAt: new Date().toISOString()
-      }
+      weeklyVolume,
+      intentDistribution: intentDistribution.slice(0, 5),
+      satisfactionTrend,
+      hasData: true,
+      executionTime,
     });
-  } catch (error) {
-    console.error("Error fetching analytics:", error);
+  } catch (error: any) {
+    console.error("[ANALYTICS] Error:", error);
     return NextResponse.json(
-      { success: false, error: (error as Error).message || "Internal Server Error" },
+      { 
+        error: error.message || "Internal server error",
+        hasData: false 
+      },
       { status: 500 }
     );
   }
 }
+
+function getDateRange(range: TimeRange): { startDate: Date; endDate: Date } {
+  const endDate = new Date();
+  const startDate = new Date();
+
+  switch (range) {
+    case "today":
+      startDate.setHours(0, 0, 0, 0);
+      break;
+    case "yesterday":
+      startDate.setDate(startDate.getDate() - 1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setDate(endDate.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    case "last4days":
+      startDate.setDate(startDate.getDate() - 3);
+      startDate.setHours(0, 0, 0, 0);
+      break;
+    case "week":
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+      break;
+    case "overall":
+      startDate.setDate(startDate.getDate() - 90);
+      startDate.setHours(0, 0, 0, 0);
+      break;
+  }
+
+  return { startDate, endDate };
+}
+
+function calculateDays(range: TimeRange): number {
+  const map: Record<TimeRange, number> = {
+    today: 1,
+    yesterday: 1,
+    last4days: 4,
+    week: 7,
+    overall: 90,
+  };
+  return map[range] || 7;
+}
+
+function processDailyData(dailyData: DailyAnalytics[], range: TimeRange) {
+  const dayLabels = getDayLabels(range);
+  const dataMap = new Map<string, DailyAnalytics>();
+
+  // Create map for quick lookup
+  dailyData.forEach((item) => {
+    dataMap.set(item.day_name, item);
+  });
+
+  // Fill in all days with data or zeros
+  const weeklyVolume = dayLabels.map((day) => {
+    const data = dataMap.get(day);
+    return {
+      day,
+      queries: data?.query_count || 0,
+      satisfaction: data?.satisfaction_score || 0,
+    };
+  });
+
+  const satisfactionTrend = dayLabels.map((day) => {
+    const data = dataMap.get(day);
+    return {
+      day,
+      satisfaction: data?.satisfaction_score || 0,
+    };
+  });
+
+  return { weeklyVolume, satisfactionTrend };
+}
+
+function getDayLabels(range: TimeRange): string[] {
+  if (range === "last4days") {
+    const labels: string[] = [];
+    for (let i = 3; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+    }
+    return labels;
+  }
+  
+  // For week/overall, return proper day sequence
+  const labels: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+  }
+  return labels;
+}
+
+function processIntentDistribution(
+  messages: Array<{ content_text: string }>,
+  totalQueries: number
+) {
+  if (messages.length === 0) return [];
+
+  const intentCounts: { [key: string]: number } = {};
+
+  messages.forEach((msg) => {
+    const intent = detectIntent(msg.content_text);
+    intentCounts[intent] = (intentCounts[intent] || 0) + 1;
+  });
+
+  // Calculate extrapolation factor
+  const sampleSize = messages.length;
+  const scaleFactor = totalQueries / sampleSize;
+
+  const sorted = Object.entries(intentCounts)
+    .map(([intent, count]) => ({
+      intent,
+      count: Math.round(count * scaleFactor),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const colors = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+  ];
+
+  return sorted.map((item, i) => ({
+    ...item,
+    color: colors[i] || colors[0],
+  }));
+}
+
+function detectIntent(text: string): string {
+  const lower = text.toLowerCase();
+
+  const intentKeywords: { [key: string]: string[] } = {
+    Appointment: ["appointment", "schedule", "book", "visit", "meeting", "consultation"],
+    Medication: ["medication", "medicine", "prescription", "drug", "pill", "pharmacy"],
+    Diagnosis: ["diagnosis", "symptom", "condition", "disease", "sick", "pain", "treatment"],
+    Billing: ["bill", "payment", "insurance", "cost", "charge", "pay", "invoice"],
+  };
+
+  for (const [intent, keywords] of Object.entries(intentKeywords)) {
+    if (keywords.some((keyword) => lower.includes(keyword))) {
+      return intent;
+    }
+  }
+
+  return "General";
+}
+
+

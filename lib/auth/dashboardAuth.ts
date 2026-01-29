@@ -44,7 +44,7 @@ export async function getDashboardAuth(): Promise<DashboardAuthResult> {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', user.sub)
     .single();
 
   if (profileError || !profile) {

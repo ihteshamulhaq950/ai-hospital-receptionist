@@ -11,7 +11,6 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Message } from "@/types/chat";
 
-
 interface ChatContextType {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -31,7 +30,15 @@ interface ChatContextType {
   handleNewChat: () => void;
   handleSelectSession: (id: string, sessionId?: string) => void;
   handleSendMessage: (content: string, sessionId: string) => Promise<void>;
-  handleStreamResponse: (userContent: string, chatSessionId: string) => Promise<void>;
+  handleStreamResponse: (
+    userContent: string,
+    chatSessionId: string,
+  ) => Promise<void>;
+  handleFeedback: (
+    messageId: string,
+    feedback: 1 | -1,
+    feedbackText: string | null,
+  ) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType>({} as ChatContextType);
@@ -47,9 +54,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
-    const [streamProgress, setStreamProgress] = useState<string>("");
+  const [streamProgress, setStreamProgress] = useState<string>("");
 
   const loadedSessionRef = useRef<string | undefined>(undefined);
 
@@ -79,14 +86,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Failed to load messages:", error);
         setError("Failed to load messages");
       } else if (data) {
-        console.log(`✅ Loaded ${data.length} messages for session ${sessionId}`);
-        
+        console.log(
+          `✅ Loaded ${data.length} messages for session ${sessionId}`,
+        );
+
         // No parsing needed! New schema already has:
         // - content_text: string (plain text)
         // - content_json: string[] (suggestions array)
         setMessages(data as Message[]);
       }
-    } catch (err:unknown) {
+    } catch (err: unknown) {
       console.error("Failed to load messages:", err);
       setError("Failed to load messages");
     } finally {
@@ -135,13 +144,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       // Navigate to selected chat
       router.replace(`/chat/${id}`);
     },
-    [router]
+    [router],
   );
 
-
-
-
-// handleStreamResponse: handles the SSE connection and message streaming
+  // handleStreamResponse: handles the SSE connection and message streaming
   const handleStreamResponse = useCallback(
     async (userContent: string, chatSessionId: string) => {
       // Add validation at the start
@@ -326,33 +332,100 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   // SEND MESSAGE
-  const handleSendMessage = useCallback(async (content: string, sessionId: string) => {
+  const handleSendMessage = useCallback(
+    async (content: string, sessionId: string) => {
+      if (!sessionId || !content.trim() || isAssistantTyping) {
+        console.warn("Chat Detail Page :📞 Send blocked", {
+          empty: !content.trim(),
+          isAssistantTyping,
+        });
+        return;
+      }
 
-    if (!sessionId || !content.trim() || isAssistantTyping) {
-      console.warn("Chat Detail Page :📞 Send blocked", {
-        empty: !content.trim(),
-        isAssistantTyping,
-      });
-      return;
-    }
+      const userContent = content.trim();
 
-    const userContent = content.trim();
+      console.log("Chat Detail Page :📞 Sending message", userContent);
 
-    console.log("Chat Detail Page :📞 Sending message", userContent);
+      const optimisticUserMsg: Message = {
+        id: `temp-user-${Date.now()}`,
+        chat_session_id: sessionId,
+        role: "user",
+        content_text: userContent,
+        content_json: [],
+        created_at: new Date().toISOString(),
+      };
 
-    const optimisticUserMsg: Message = {
-      id: `temp-user-${Date.now()}`,
-      chat_session_id: sessionId,
-      role: "user",
-      content_text: userContent,
-      content_json: [],
-      created_at: new Date().toISOString(),
-    };
+      setMessages((prev) => [...prev, optimisticUserMsg]);
 
-    setMessages((prev) => [...prev, optimisticUserMsg]);
+      await handleStreamResponse(userContent, sessionId);
+    },
+    [],
+  );
 
-    await handleStreamResponse(userContent, sessionId);
-  }, []);
+   const handleFeedback = useCallback(
+    async (messageId: string, feedback: 1 | -1, feedbackText: string | null) => {
+      console.log("[CHAT_CONTEXT] Submitting feedback", { messageId, feedback, feedbackText });
+
+      setError(null);
+
+      // Optimistic update
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, user_feedback: feedback, feedback_text: feedbackText }
+            : msg
+        )
+      );
+
+      try {
+        const updateData: { user_feedback: number; feedback_text?: string | null } = {
+          user_feedback: feedback,
+        };
+
+        // Only include feedback_text if it's provided
+        if (feedbackText !== null) {
+          updateData.feedback_text = feedbackText;
+        }
+
+        const { error } = await supabase
+          .from("chat_messages")
+          .update(updateData)
+          .eq("id", messageId)
+          .eq("role", "assistant");
+
+        if (error) {
+          console.error("[CHAT_CONTEXT] Failed to save feedback:", error);
+
+          // Revert optimistic update on error
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, user_feedback: null, feedback_text: null }
+                : msg
+            )
+          );
+
+          setError("Failed to save feedback. Please try again.");
+        } else {
+          console.log("[CHAT_CONTEXT] Feedback saved successfully");
+        }
+      } catch (err) {
+        console.error("[CHAT_CONTEXT] Feedback error:", err);
+
+        // Revert optimistic update
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === messageId
+              ? { ...msg, user_feedback: null, feedback_text: null }
+              : msg
+          )
+        );
+
+        setError("Failed to save feedback. Please try again.");
+      }
+    },
+    []
+  );
 
   const value: ChatContextType = {
     messages,
@@ -374,8 +447,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     handleStreamResponse,
     streamProgress,
     setStreamProgress,
+    handleFeedback,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
-
