@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 export function ChatAuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, authLoading, ensureAnonymous } = useAuth();
+  const { userId, authLoading, ensureAnonymous } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -14,14 +14,14 @@ export function ChatAuthGuard({ children }: { children: React.ReactNode }) {
 
     const init = async () => {
       try {
-        if (!user) {
+        if (!userId) {
           console.log("User is not present inside chatguard auth");
           
           await ensureAnonymous();
           console.log("Anonymous user is registered");
           
         }
-        console.log("Anonymous user is present:", user)
+        console.log("Anonymous user is present:", userId)
       } catch (err) {
         console.error(err);
         setError("Failed to initialize chat session.");
@@ -29,7 +29,7 @@ export function ChatAuthGuard({ children }: { children: React.ReactNode }) {
     };
 
     init();
-  }, [authLoading, user, ensureAnonymous]);
+  }, [authLoading, userId, ensureAnonymous]);
 
   if (authLoading) {
     return (

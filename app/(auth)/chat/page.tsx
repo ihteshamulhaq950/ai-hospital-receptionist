@@ -15,14 +15,14 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 // Comprehensive FAQ Database - 24 Questions
 const FAQ_DATABASE = [
   {
-    question: "What services does CityCare offer?",
-    answer: "CityCare Hospital offers comprehensive healthcare services including Emergency Care (24/7), Cardiology, Orthopedics, Pediatrics, Maternity Care, Diagnostic Imaging (X-Ray, MRI, CT Scan), Laboratory Services, Outpatient Clinics, and Surgical Services. We also provide specialized treatments in Oncology, Neurology, and Physical Therapy. Our state-of-the-art facilities ensure you receive the best possible care.",
+    question: "What services does Care Link offer?",
+    answer: "Care Link Hospital offers comprehensive healthcare services including Emergency Care (24/7), Cardiology, Orthopedics, Pediatrics, Maternity Care, Diagnostic Imaging (X-Ray, MRI, CT Scan), Laboratory Services, Outpatient Clinics, and Surgical Services. We also provide specialized treatments in Oncology, Neurology, and Physical Therapy. Our state-of-the-art facilities ensure you receive the best possible care.",
     category: "services",
     emoji: "🏥"
   },
   {
     question: "How do I schedule an appointment?",
-    answer: "You can schedule an appointment in multiple ways: Call our appointment line at (555) 123-4567 (Monday-Friday, 8 AM - 6 PM), book online through our patient portal at citycare.com/appointments, use our mobile app available on iOS and Android, or visit our reception desk in person. For urgent care, walk-ins are welcome. Please have your insurance information ready when booking.",
+    answer: "You can schedule an appointment in multiple ways: Call our appointment line at (555) 123-4567 (Monday-Friday, 8 AM - 6 PM), book online through our patient portal at Care Link.com/appointments, use our mobile app available on iOS and Android, or visit our reception desk in person. For urgent care, walk-ins are welcome. Please have your insurance information ready when booking.",
     category: "appointments",
     emoji: "📅"
   },
@@ -34,7 +34,7 @@ const FAQ_DATABASE = [
   },
   {
     question: "Do you accept my insurance?",
-    answer: "CityCare Hospital accepts most major insurance plans including Blue Cross Blue Shield, Aetna, UnitedHealthcare, Cigna, Medicare, and Medicaid. We're also in-network with many local and regional insurers. Please contact our billing department at (555) 123-4568 or check our website for a complete list of accepted insurance providers. We recommend verifying your coverage before your visit to understand any out-of-pocket costs.",
+    answer: "Care Link Hospital accepts most major insurance plans including Blue Cross Blue Shield, Aetna, UnitedHealthcare, Cigna, Medicare, and Medicaid. We're also in-network with many local and regional insurers. Please contact our billing department at (555) 123-4568 or check our website for a complete list of accepted insurance providers. We recommend verifying your coverage before your visit to understand any out-of-pocket costs.",
     category: "billing",
     emoji: "💳"
   },
@@ -52,7 +52,7 @@ const FAQ_DATABASE = [
   },
   {
     question: "Can I get my medical records?",
-    answer: "You can access your medical records through our secure patient portal at citycare.com/portal, request copies by calling Medical Records at (555) 123-4570, or visit the Medical Records office on the 1st floor (Monday-Friday, 8 AM - 5 PM). Most records are available within 3-5 business days. There may be a small fee for printed copies. You'll need photo ID and to complete a release form.",
+    answer: "You can access your medical records through our secure patient portal at Care Link.com/portal, request copies by calling Medical Records at (555) 123-4570, or visit the Medical Records office on the 1st floor (Monday-Friday, 8 AM - 5 PM). Most records are available within 3-5 business days. There may be a small fee for printed copies. You'll need photo ID and to complete a release form.",
     category: "records",
     emoji: "📋"
   },
@@ -82,7 +82,7 @@ const FAQ_DATABASE = [
   },
   {
     question: "Is there WiFi available?",
-    answer: "Free WiFi is available throughout the hospital. Connect to 'CityCare-Guest' network - no password required. We also have charging stations in waiting areas and patient rooms. For assistance, contact our help desk at extension 4500. Business centers with computers and printers are available on floors 1 and 3.",
+    answer: "Free WiFi is available throughout the hospital. Connect to 'Care Link-Guest' network - no password required. We also have charging stations in waiting areas and patient rooms. For assistance, contact our help desk at extension 4500. Business centers with computers and printers are available on floors 1 and 3.",
     category: "amenities",
     emoji: "📶"
   },
@@ -100,7 +100,7 @@ const FAQ_DATABASE = [
   },
   {
     question: "Can I choose my own doctor?",
-    answer: "Absolutely! You can select from our network of over 300 physicians across 40+ specialties. View doctor profiles, credentials, patient reviews, and availability on our website at citycare.com/find-a-doctor. You can also request a specific physician when scheduling. If you have a preference, let our appointment team know and we'll do our best to accommodate.",
+    answer: "Absolutely! You can select from our network of over 300 physicians across 40+ specialties. View doctor profiles, credentials, patient reviews, and availability on our website at Care Link.com/find-a-doctor. You can also request a specific physician when scheduling. If you have a preference, let our appointment team know and we'll do our best to accommodate.",
     category: "doctors",
     emoji: "👨‍⚕️"
   },
@@ -136,13 +136,13 @@ const FAQ_DATABASE = [
   },
   {
     question: "How do I file a complaint or give feedback?",
-    answer: "We value your feedback! You can submit comments through our patient portal, speak with our Patient Relations department at (555) 123-4575, complete comment cards available at nurse stations, or email feedback@citycare.com. For urgent concerns, ask to speak with a nursing supervisor or hospital administrator. We respond to all feedback within 2 business days.",
+    answer: "We value your feedback! You can submit comments through our patient portal, speak with our Patient Relations department at (555) 123-4575, complete comment cards available at nurse stations, or email feedback@Care Link.com. For urgent concerns, ask to speak with a nursing supervisor or hospital administrator. We respond to all feedback within 2 business days.",
     category: "feedback",
     emoji: "📝"
   },
   {
     question: "Do you offer health screening events?",
-    answer: "Yes! We host free community health screenings monthly, including blood pressure checks, glucose testing, cholesterol screening, and skin cancer screening. Follow us on social media or check citycare.com/events for upcoming dates. We also offer corporate wellness programs and health fairs. Our preventive care helps catch issues early when they're most treatable.",
+    answer: "Yes! We host free community health screenings monthly, including blood pressure checks, glucose testing, cholesterol screening, and skin cancer screening. Follow us on social media or check Care Link.com/events for upcoming dates. We also offer corporate wellness programs and health fairs. Our preventive care helps catch issues early when they're most treatable.",
     category: "wellness",
     emoji: "🩺"
   },
@@ -284,7 +284,7 @@ export default function EmptyChatPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold mb-1.5 text-slate-900 dark:text-white">
-                  Welcome to CityCare AI
+                  Welcome to Care Link AI
                 </h2>
                 <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
                   Your 24/7 healthcare assistant. Ask about services, appointments, billing, or any health-related questions.
@@ -390,232 +390,3 @@ export default function EmptyChatPage() {
   );
 }
 
-
-// // /chat/page.tsx
-// "use client";
-
-// import { useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { useChat } from "@/context/ChatContext";
-// import { Bot, Sparkles } from "lucide-react";
-// import { Card } from "@/components/ui/card";
-// import { Message } from "@/types/chat";
-// import { ChatHeader } from "@/components/chat/ChatHeader";
-// import { ChatInput } from "@/components/chat/ChatInput";
-// import { ChatContainer } from "@/components/chat/ChatContainer";
-// import { MessageBubble } from "@/components/chat/MessageBubble";
-// import { TypingIndicator } from "@/components/chat/TypingIndicator";
-
-// // Hardcoded FAQ with answers
-// const FAQ_DATA = [
-//   {
-//     question: "What services does CityCare offer?",
-//     answer:
-//       "CityCare Hospital offers comprehensive healthcare services including Emergency Care (24/7), Cardiology, Orthopedics, Pediatrics, Maternity Care, Diagnostic Imaging (X-Ray, MRI, CT Scan), Laboratory Services, Outpatient Clinics, and Surgical Services. We also provide specialized treatments in Oncology, Neurology, and Physical Therapy. Our state-of-the-art facilities ensure you receive the best possible care.",
-//   },
-//   {
-//     question: "How do I schedule an appointment?",
-//     answer:
-//       "You can schedule an appointment in multiple ways: Call our appointment line at (555) 123-4567 (Monday-Friday, 8 AM - 6 PM), book online through our patient portal at citycare.com/appointments, use our mobile app available on iOS and Android, or visit our reception desk in person. For urgent care, walk-ins are welcome. Please have your insurance information ready when booking.",
-//   },
-//   {
-//     question: "What are your visiting hours?",
-//     answer:
-//       "General visiting hours are 10:00 AM - 8:00 PM daily. ICU visiting hours are 2:00 PM - 4:00 PM and 6:00 PM - 8:00 PM. Maternity ward allows 24/7 access for one support person. Pediatric ward permits parents to stay overnight. We limit visitors to 2 per patient at a time. Please check with your nurse for any ward-specific restrictions. Service animals are always welcome.",
-//   },
-//   {
-//     question: "Do you accept my insurance?",
-//     answer:
-//       "CityCare Hospital accepts most major insurance plans including Blue Cross Blue Shield, Aetna, UnitedHealthcare, Cigna, Medicare, and Medicaid. We're also in-network with many local and regional insurers. Please contact our billing department at (555) 123-4568 or check our website for a complete list of accepted insurance providers. We recommend verifying your coverage before your visit to understand any out-of-pocket costs.",
-//   },
-// ];
-
-// export default function EmptyChatPage() {
-//   const router = useRouter();
-//   const [input, setInput] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-//   const [messages, setMessages] = useState<
-//     Array<{ role: "user" | "assistant"; content: string }>
-//   >([]);
-//   const [isTyping, setIsTyping] = useState(false);
-//   const { setIsAssistantTyping } = useChat();
-
-//   const handleFAQClick = (faq: { question: string; answer: string }) => {
-//     setMessages((prev) => [...prev, { role: "user", content: faq.question }]);
-//     setIsTyping(true);
-
-//     setTimeout(() => {
-//       setMessages((prev) => [...prev, { role: "assistant", content: faq.answer }]);
-//       setIsTyping(false);
-//     }, 1500);
-//   };
-
-//   const handleSendMessage = async (e?: React.FormEvent) => {
-//     e?.preventDefault();
-
-//     if (!input.trim() || isLoading) return;
-
-//     const content = input.trim();
-
-//     // Check if it's a FAQ question
-//     const matchedFAQ = FAQ_DATA.find(
-//       (faq) => faq.question.toLowerCase() === content.toLowerCase(),
-//     );
-
-//     if (matchedFAQ) {
-//       handleFAQClick(matchedFAQ);
-//       setInput("");
-//       return;
-//     }
-
-//     // For non-FAQ questions, redirect to chat detail page
-//     const optimisticUserMessage: Message = {
-//       id: `temp-user-${Date.now()}`,
-//       chat_session_id: "temp",
-//       role: "user",
-//       content_text: content,
-//       content_json: [],
-//       created_at: new Date().toISOString(),
-//     };
-
-//     setInput("");
-//     setIsLoading(true);
-//     setIsAssistantTyping(true);
-//     setError(null);
-
-//     try {
-//       const res = await fetch("/api/chat/init", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ title: content }),
-//       });
-
-//       const data = await res.json();
-
-//       if (!res.ok || !data.sessionId) {
-//         throw new Error(data.error || "Failed to start chat");
-//       }
-
-//       sessionStorage.setItem(
-//         `pending_msg_${data.sessionId}`,
-//         JSON.stringify(optimisticUserMessage),
-//       );
-
-//       window.dispatchEvent(new Event("chatCreated"));
-//       router.replace(`/chat/${data.sessionId}`);
-//     } catch (err) {
-//       console.error("Error starting chat:", err);
-//       setError("Network error. Please try again.");
-//       setIsAssistantTyping(false);
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const showWelcome = messages.length === 0;
-
-//   return (
-//     <div className="flex flex-col h-screen overflow-hidden bg-white dark:bg-black">
-//       <ChatHeader showNewChatButton={false} showCloseButton />
-
-//       <ChatContainer dependencies={[messages, isTyping]}>
-//         {showWelcome ? (
-//           <>
-//             {/* Welcome Section */}
-//             <div className="text-center py-8 space-y-4">
-//               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-//                 <Bot className="w-8 h-8 text-white" />
-//               </div>
-//               <div>
-//                 <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
-//                   Welcome to CityCare AI
-//                 </h2>
-//                 <p className="text-slate-600 dark:text-slate-400 text-sm">
-//                   Ask me anything about our hospital services, appointments, or
-//                   general health questions.
-//                 </p>
-//               </div>
-//             </div>
-
-//             {/* Suggested Questions */}
-//             <div className="mt-8">
-//               <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-//                 <Sparkles className="w-3.5 h-3.5" />
-//                 Quick answers - Click to get instant responses:
-//               </p>
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-//                 {FAQ_DATA.map((faq, i) => (
-//                   <Card
-//                     key={i}
-//                     className="cursor-pointer hover:shadow-md hover:border-primary/50 transition-all group bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-//                     onClick={() => handleFAQClick(faq)}
-//                   >
-//                     <div className="p-4">
-//                       <p className="text-sm text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors">
-//                         {faq.question}
-//                       </p>
-//                     </div>
-//                   </Card>
-//                 ))}
-//               </div>
-//             </div>
-//           </>
-//         ) : (
-//           <div className="space-y-6">
-//             {/* Conversation Messages */}
-//             {messages.map((msg, index) => (
-//               <MessageBubble
-//                 key={index}
-//                 role={msg.role}
-//                 content={msg.content}
-//               />
-//             ))}
-
-//             {isTyping && <TypingIndicator />}
-
-//             {/* Show FAQ options after conversation */}
-//             {messages.length > 0 && !isTyping && (
-//               <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
-//                 <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-//                   <Sparkles className="w-3.5 h-3.5" />
-//                   More quick questions:
-//                 </p>
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-//                   {FAQ_DATA.filter(
-//                     (faq) => !messages.some((m) => m.content === faq.question),
-//                   ).map((faq, i) => (
-//                     <Card
-//                       key={i}
-//                       className="cursor-pointer hover:shadow-md hover:border-primary/50 transition-all group bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
-//                       onClick={() => handleFAQClick(faq)}
-//                     >
-//                       <div className="p-3">
-//                         <p className="text-xs text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors">
-//                           {faq.question}
-//                         </p>
-//                       </div>
-//                     </Card>
-//                   ))}
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         )}
-
-//         {error && (
-//           <Card className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50">
-//             <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
-//           </Card>
-//         )}
-//       </ChatContainer>
-
-//       <ChatInput
-//         input={input}
-//         setInput={setInput}
-//         onSend={handleSendMessage}
-//         disabled={isLoading || isTyping}
-//         isLoading={isLoading}
-//       />
-//     </div>
-//   );
-// }

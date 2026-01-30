@@ -9,19 +9,19 @@ export function DashboardAuthGuard({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, authLoading, isAnonymous } = useAuth();
+  const { userId, authLoading, isAnonymous } = useAuth();
   const router = useRouter();
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
 
-    if (!user || isAnonymous) {
+    if (!userId || isAnonymous) {
       setRedirecting(true);
       router.replace("/login");
     }
-    console.log("Dashboard user is present:", user)
-  }, [user, authLoading, isAnonymous, router]);
+    console.log("Dashboard userId is present:", userId)
+  }, [userId, authLoading, isAnonymous, router]);
 
   if (authLoading || redirecting) {
     return (

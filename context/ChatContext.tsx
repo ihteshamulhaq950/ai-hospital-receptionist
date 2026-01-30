@@ -271,7 +271,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
                     );
 
                     const assistantMsg: Message = {
-                      id: `temp-assistant-${Date.now()}`,
+                      id: parsedData.message_id || `temp-assistant-${Date.now()}`,
                       chat_session_id: chatSessionId,
                       role: "assistant",
                       content_text: parsedData.content_text || "",
@@ -356,6 +356,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       setMessages((prev) => [...prev, optimisticUserMsg]);
+      setInput("")
 
       await handleStreamResponse(userContent, sessionId);
     },

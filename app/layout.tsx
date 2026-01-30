@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   // 1️⃣ Title & description
   title: {
-    default: "CareLink AI | Hospital AI Receptionist",
+    default: "Care Link AI | Hospital AI Receptionist",
     template: "%s | CareLink AI",
   },
   description:
-    "CareLink AI is a RAG-based hospital AI receptionist that helps patients with appointments, doctor availability, hospital services, and FAQs.",
+    "Care Link AI is a RAG-based hospital AI receptionist that helps patients with appointments, doctor availability, hospital services, and FAQs.",
 
   // 2️⃣ Keywords
   keywords: [
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     title: "CareLink AI | Hospital AI Receptionist",
     description:
       "An intelligent RAG-based AI receptionist for hospitals and clinics.",
-    url: "https://citycare.ihteshamulhaq.com",
+    url: "https://carelink.ihteshamulhaq.com",
     siteName: "CareLink AI",
     images: [
       {
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
 
   // 8️⃣ Canonical
   alternates: {
-    canonical: "https://citycare.ihteshamulhaq.com",
+    canonical: "https://carelink.ihteshamulhaq.com",
   },
 
   // 9️⃣ Icons
@@ -91,7 +91,7 @@ export const metadata: Metadata = {
   },
 
   // 🔟 Base URL
-  metadataBase: new URL("https://citycare.ihteshamulhaq.com"),
+  metadataBase: new URL("https://carelink.ihteshamulhaq.com"),
 };
 
 export default function RootLayout({

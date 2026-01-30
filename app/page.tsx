@@ -50,7 +50,7 @@ export default function HospitalHomePage() {
               <Bot className="w-7 h-7 text-white font-bold text-xl" />
             </div>
             <span className="font-bold text-xl text-foreground">
-              CityCare Hospital
+              Care Link Hospital
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
@@ -134,7 +134,7 @@ export default function HospitalHomePage() {
               <span className="text-blue-600">Close to Home</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 text-pretty">
-              CityCare provides 24/7 emergency services, specialized
+              Care Link provides 24/7 emergency services, specialized
               consultations, and advanced diagnostics with a patient-first
               approach.
             </p>
@@ -216,7 +216,7 @@ export default function HospitalHomePage() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Why Choose CityCare?
+                Why Choose Care Link?
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 We combine cutting-edge medical technology with compassionate
@@ -302,7 +302,7 @@ export default function HospitalHomePage() {
                   <span className="text-white font-bold text-xl">+</span>
                 </div>
                 <span className="font-bold text-lg text-foreground">
-                  CityCare Hospital
+                  Care Link Hospital
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
@@ -454,7 +454,7 @@ export default function HospitalHomePage() {
                 <li className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="text-sm text-muted-foreground">
-                    info@citycare.com
+                    info@carelink.com
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
@@ -470,7 +470,7 @@ export default function HospitalHomePage() {
           {/* Bottom Bar */}
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © 2024 CityCare Hospital. All rights reserved.
+              © 2024 Care Link Hospital. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link

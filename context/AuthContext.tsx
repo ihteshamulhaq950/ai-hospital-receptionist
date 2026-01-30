@@ -8,16 +8,18 @@ import {
   useCallback,
 } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { JwtPayload } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  user: User | null;
+  userId: string | null;
   authLoading: boolean;
   isAnonymous: boolean;
+  userClaims: JwtPayload | null;
+  setUserClaims: React.Dispatch<React.SetStateAction<JwtPayload | null>>,
   ensureAnonymous: () => Promise<void>;
   signInWithPassword: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updatePassword: (newPassword: string) => Promise<{
@@ -30,82 +32,72 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [userClaims, setUserClaims] = useState<JwtPayload | null>(null);
 
-
-   // useEffect(() => {
-    //   const initAuth = async () => {
-    //     const {
-    //       data: { user: currentUser },
-    //     } = await supabase.auth.getUser();
-    //     if (currentUser) {
-    //       setUser(currentUser);
-    //     } else {
-    //       const {
-    //         data: { user: anonUser },
-    //       } = await supabase.auth.signInAnonymously();
-    //       if (anonUser) setUser(anonUser);
-    //     }
-    //     setInitialLoading(false);
-  
-    //     const { data: authListener } = supabase.auth.onAuthStateChange(
-    //       (_event, session) => {
-    //         setUser(session?.user || null);
-    //       }
-    //     );
-  
-    //     return () => authListener.subscription.unsubscribe();
-    //   };
-  
-    //   initAuth();
-    // }, []);
-   
-
-  /* Initial session check */
+  /* Initial session / claims check */
+  /* Minimal auth initialization */
   useEffect(() => {
     const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getClaims();
 
-      if (user) {
-        console.log("User is initialized inside home page auth provider", user);
-        
-        setUser(user);
-        setIsAnonymous(!!user.is_anonymous);
+      if (error) {
+        console.error("Failed to read auth claims", error);
+        setAuthLoading(false);
+        return;
       }
 
-      console.log("No user is initialized yet though user is on home page auth provider");
-      
+      const claims = data?.claims ?? null;
+
+      if (claims) {
+        setUserClaims(claims);
+        setUserId(claims.sub);
+        setIsAnonymous(!!claims.is_anonymous);
+      } else {
+        setUserId(null);
+        setIsAnonymous(false);
+      }
 
       setAuthLoading(false);
     };
 
     init();
+    // export type AuthChangeEvent =
+    //   | 'INITIAL_SESSION'
+    //   | 'PASSWORD_RECOVERY'
+    //   | 'SIGNED_IN'
+    //   | 'SIGNED_OUT'
+    //   | 'TOKEN_REFRESHED'
+    //   | 'USER_UPDATED'
+    //   | AuthChangeEventMFA
 
+    /* Keep in sync with auth changes */
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        const u = session?.user ?? null;
-        setUser(u);
+        const u = session?.user;
+
+        setUserId(u?.id ?? null);
         setIsAnonymous(!!u?.is_anonymous);
-      }
+      },
     );
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   /* Create anon ONLY when needed */
   const ensureAnonymous = useCallback(async () => {
-    if (user) return;
+    if (userId) return;
 
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error) throw error;
 
-    setUser(data.user);
+    setUserId(data?.user?.id ?? null);
     setIsAnonymous(true);
-  }, [user]);
+  }, [userId]);
 
   /* Convert anon → admin safely */
   const signInWithPassword = async (email: string, password: string) => {
@@ -119,15 +111,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.log("Something went wrong in registering user with signInWithPassword, error is:", error);
-        
+        console.log(
+          "Something went wrong in registering user with signInWithPassword, error is:",
+          error,
+        );
+
         return { success: false, error: error.message };
       }
 
-      console.log("User is signedInWithPassword, data is:",data);
-      
+      console.log("User is signedInWithPassword, data is:", data);
 
-      setUser(data.user);
+      setUserId(data.user.id);
       setIsAnonymous(false);
       return { success: true };
     } catch (err: unknown) {
@@ -136,51 +130,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updatePassword = useCallback(
-  async (newPassword: string): Promise<{
-    success: boolean;
-    error?: string;
-  }> => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+    async (
+      newPassword: string,
+    ): Promise<{
+      success: boolean;
+      error?: string;
+    }> => {
+      try {
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
 
-      if (error) {
-        console.error("Update password error:", error);
+        if (error) {
+          console.error("Update password error:", error);
+          return {
+            success: false,
+            error: error.message || "Failed to update password",
+          };
+        }
+
+        return { success: true };
+      } catch (err) {
+        console.error("Update password exception:", err);
         return {
           success: false,
-          error: error.message || "Failed to update password",
+          error:
+            err instanceof Error ? err.message : "Failed to update password",
         };
       }
-
-      return { success: true };
-    } catch (err) {
-      console.error("Update password exception:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Failed to update password",
-      };
-    }
-  },
-  []
-);
+    },
+    [],
+  );
 
   const logout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
+    setUserId(null);
     setIsAnonymous(false);
   };
+  
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        userId,
         authLoading,
         isAnonymous,
         ensureAnonymous,
         signInWithPassword,
         logout,
-        updatePassword
+        updatePassword,
+        userClaims,
+        setUserClaims
       }}
     >
       {children}

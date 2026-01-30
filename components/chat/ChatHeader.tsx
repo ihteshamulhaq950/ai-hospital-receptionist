@@ -36,7 +36,7 @@ export function ChatHeader({
             </div>
             <div>
               <h1 className="text-sm font-semibold leading-none text-slate-900 dark:text-white">
-                CityCare AI
+                Care Link AI
               </h1>
               <Badge
                 variant="outline"

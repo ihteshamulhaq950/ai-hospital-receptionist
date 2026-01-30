@@ -51,6 +51,7 @@ export async function GET(
         isEmbedded: pdf.embedded_status === 'embedded',
         embeddedStatus: pdf.embedded_status, // 'pending' | 'deleted' | 'embedded '
         hasStorageFile: !!pdf.upload_file_storage_path, // boolean
+        uploadedFilePath: pdf.upload_file_storage_path, // string | null
       },
     });
   } catch (error) {

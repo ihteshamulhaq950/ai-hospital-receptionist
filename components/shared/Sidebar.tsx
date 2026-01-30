@@ -20,22 +20,22 @@ export interface Session {
 export default function Sidebar() {
   const [recentChats, setRecentChats] = useState<Session[]>([]);
   const { sidebarOpen, setSidebarOpen } = useChat();
-  const { user, isAnonymous } = useAuth();
+  const { userId, isAnonymous } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     fetchRecentChats();
-  }, [user]);
+  }, [userId]);
 
   const fetchRecentChats = async () => {
-    if (!user) return;
+    if (!userId) return;
 
     try {
       const { data } = await supabase
         .from("chat_sessions")
         .select("id, title, message_count, is_closed")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("is_closed", false)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -53,7 +53,7 @@ export default function Sidebar() {
     const handleChatRefresh = () => fetchRecentChats();
     window.addEventListener("chatCreated", handleChatRefresh);
     return () => window.removeEventListener("chatCreated", handleChatRefresh);
-  }, [user]);
+  }, [userId]);
 
   // Close sidebar on mobile when clicking outside
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function Sidebar() {
               <Bot className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-sm text-foreground">
-              CityCare AI
+              Care Link AI
             </span>
           </Link>
           <Button
@@ -119,7 +119,7 @@ export default function Sidebar() {
 
         {/* New Chat Button */}
         <div className="p-3 border-b">
-          {!isAnonymous && user && user.invited_at && (
+          {!isAnonymous && userId && (
             <Link
               href="/dashboard"
             >
