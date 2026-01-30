@@ -38,7 +38,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function HospitalHomePage() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, isAnonymous } = useAuth();
+  const { userId, isAnonymous } = useAuth();
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -149,7 +149,7 @@ export default function HospitalHomePage() {
               >
                 Find a Doctor
               </Button>
-              {!isAnonymous && user && user.invited_at && (
+              {!isAnonymous && userId && (
                 <Link href={'/dashboard'}>
                   <Button
                   size="lg"
