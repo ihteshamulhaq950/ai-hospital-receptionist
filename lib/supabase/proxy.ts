@@ -8,18 +8,34 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // 1. Define Route Logic
-  const isAdminRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/api/dashboard');
-  
-  // Specific check: /chat is public, but /chat/[id] or /api/chat requires a user
-  const isProtectedChat = (pathname.startsWith('/chat/') || pathname.startsWith('/api/chat')) && pathname !== '/chat';
-  
-  const isAuthPage = pathname === '/login' || pathname === '/callback';
+  const isAdminRoute =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/api/dashboard");
 
+  // Specific check: /chat is public, but /chat/[id] or /api/chat requires a user
+  const isProtectedChat =
+    (pathname.startsWith("/chat/") || pathname.startsWith("/api/chat")) &&
+    pathname !== "/chat";
+
+  const isAuthPage = pathname === "/login" || pathname === "/callback";
+
+  // CASE 3: Redirect authenticated users AWAY from Login/Callback
+  // if (isAuthPage && user) {
+  //   const url = request.nextUrl.clone();
+  //   // Non-anonymous (Admin) -> dashboard | Anonymous -> /chat
+  //   url.pathname = '/' + (user.is_anonymous ? 'chat' : 'dashboard');
+  //   return NextResponse.redirect(url);
+  // }
   // CASE 3: Redirect authenticated users AWAY from Login/Callback
   if (isAuthPage && user) {
     const url = request.nextUrl.clone();
-    // Non-anonymous (Admin) -> dashboard | Anonymous -> /chat
-    url.pathname = '/' + (user.is_anonymous ? 'chat' : 'dashboard');
+
+    // ✅ Allow anonymous users to stay on login page
+    if (user.is_anonymous) {
+      return NextResponse.next({ request });
+    }
+
+    // Only redirect non-anonymous (authenticated admins)
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 
@@ -28,7 +44,7 @@ export async function updateSession(request: NextRequest) {
     // Block if no user OR user is anonymous
     if (!user || user.is_anonymous) {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = "/login";
       return NextResponse.redirect(url);
     }
   }
@@ -38,7 +54,7 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedChat) {
     if (!user) {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = "/login";
       return NextResponse.redirect(url);
     }
   }
@@ -46,7 +62,7 @@ export async function updateSession(request: NextRequest) {
   // Final Response: Allow /chat (base), /login, and /callback to pass through naturally
   const response = NextResponse.next({ request });
   if (user) {
-    response.headers.set('x-user-id', user.sub as string);
+    response.headers.set("x-user-id", user.sub as string);
   }
 
   return response;
