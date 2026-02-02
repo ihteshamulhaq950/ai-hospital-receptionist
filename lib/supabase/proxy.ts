@@ -19,7 +19,7 @@ export async function updateSession(request: NextRequest) {
   if (isAuthPage && user) {
     const url = request.nextUrl.clone();
     // Non-anonymous (Admin) -> dashboard | Anonymous -> /chat
-    url.pathname = '/' + (user.is_anonymous ? 'chat' : 'dashboard');
+    url.pathname = '/' + (user.is_anonymous ? 'login' : 'dashboard');
     return NextResponse.redirect(url);
   }
 
