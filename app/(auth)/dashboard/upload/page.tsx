@@ -228,8 +228,8 @@ export default function UploadPage() {
         <CardHeader>
           <CardTitle>Select PDF File</CardTitle>
           <CardDescription>
-            Maximum file size&colon; 10MB&period; Only PDF format is
-            supported&period;
+            Maximum file size: 10MB. Only PDF format is
+            supported.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -258,7 +258,7 @@ export default function UploadPage() {
                 : "Click to upload or drag and drop"}
             </p>
             <p className="text-xs text-muted-foreground">
-              PDF files only&comma; up to 10MB
+              PDF files only, up to 10MB
             </p>
             <input
               ref={fileInputRef}
@@ -310,8 +310,8 @@ export default function UploadPage() {
             <Alert className="border-green-500/50 bg-green-500/10">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <AlertDescription className="text-green-700 dark:text-green-400">
-                PDF successfully uploaded and embedded&excl; Redirecting to PDF
-                list&period;&period;&period;
+                PDF successfully uploaded and embedded! Redirecting to PDF
+                list...
               </AlertDescription>
             </Alert>
           )}
@@ -334,7 +334,7 @@ export default function UploadPage() {
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing&period;&period;&period;
+                  Processing...
                 </>
               ) : (
                 <>
@@ -361,13 +361,13 @@ export default function UploadPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            When you upload a PDF&comma; it goes through a secure multi-step
-            process&colon; the file is uploaded to cloud storage&comma; pages
-            are extracted&comma; content is chunked into meaningful
-            segments&comma; embeddings are generated using AI&comma; vectors are
-            stored in Pinecone&comma; and finally metadata is saved to the
-            database&period; If any step fails&comma; all previous changes are
-            automatically rolled back to maintain data consistency&period;
+            When you upload a PDF, it goes through a secure multi-step
+            process: the file is uploaded to cloud storage, pages
+            are extracted, content is chunked into meaningful
+            segments, embeddings are generated using AI, vectors are
+            stored in Pinecone, and finally metadata is saved to the
+            database. If any step fails, all previous changes are
+            automatically rolled back to maintain data consistency.
           </p>
         </CardContent>
       </Card>
