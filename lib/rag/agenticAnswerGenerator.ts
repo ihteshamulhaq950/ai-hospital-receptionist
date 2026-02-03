@@ -88,14 +88,14 @@ export async function generateAnswer(
 
   } catch (error) {
     console.error("[Answer Generator] Failed, using fallback:", error);
-    return fallbackAnswer(hasContext);
+    return fallbackAnswer(hasContext, context);
   }
 }
 
-function fallbackAnswer(hasContext: boolean): HospitalAnswer {
+function fallbackAnswer(hasContext: boolean, context: string): HospitalAnswer {
   return {
     answer: hasContext 
-      ? "I found some information but had trouble processing it. Please try rephrasing your question."
+      ? `Relevant data was retrieved successfully, but I'm currently unable to generate a final refine answer. Here is the raw information I found that may help you: ${context} `
       : "I couldn't find specific information about that in our knowledge base. Please try one of the suggested questions below.",
     suggestions: hasContext 
       ? [

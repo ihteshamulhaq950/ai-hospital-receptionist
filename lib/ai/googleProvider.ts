@@ -20,7 +20,7 @@ export async function callGeminiWithSchema<T>(options: GeminiCallOptions): Promi
   const {
     prompt,
     responseSchema,
-    model = "gemini-2.5-flash",
+    model = "gemini-2.5-flas",
     temperature = 0.7,
     maxOutputTokens = 1024,
   } = options;

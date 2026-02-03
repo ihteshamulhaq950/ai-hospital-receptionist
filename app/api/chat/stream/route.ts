@@ -1,4 +1,4 @@
-// // app/api/chat/stream/route.ts
+// app/api/chat/stream/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { answerWithHospitalContext } from "@/lib/rag/answerWithHospitalContext";
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         const result = await answerWithHospitalContext({
           content: content.trim(),
           namespace: getHospitalNamespace(),
-          topK: 3,
+          topK: 2,
           onProgress: (stage, details) => {
             // Real-time progress updates
             switch (stage) {
