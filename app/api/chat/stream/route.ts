@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   (async () => {
     try {
-      // ─── 1. Parse & validate input ───
+      // 1. Parse & validate input
       const body = await req.json().catch(() => ({}));
       const { content, chatSessionId } = body;
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         return;
       }
 
-      // ─── 2. Authentication & authorization ───
+      // 2. Authentication & authorization
       const auth = await getChatAuth();
       if (!auth.success) {
         sendEvent("error", {
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
       const { user, supabase } = auth;
 
-      // Quick ownership check
+      // 3. Quick ownership check
       const { data: session, error: sessionErr } = await supabase
         .from("chat_sessions")
         .select("id")
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         return;
       }
 
-      // ─── 3. Save user message (fire & forget) ───
+      // 4. Save user message (fire & forget)
       supabase
         .from("chat_messages")
         .insert({
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
           if (error) console.error("[Stream API] Failed to save user message:", error);
         });
 
-      // ─── 4. AGENTIC RAG FLOW WITH PROGRESS ───
+      // 5. AGENTIC RAG FLOW WITH PROGRESS
       let assistantContent: AssistantContent = {
         answer: "I'm having trouble right now. Please try again shortly.",
         suggestions: [],
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
         };
       }
 
-      // ─── 5. Save assistant message (quick because RAG already done) ───
+      // 6. Save assistant message (quick because RAG already done)
       const { data: assistantMessage, error: assistantMsgError } = await supabase
         .from("chat_messages")
         .insert({
@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
           if (error) console.error("[Stream API] Failed to increment count:", error);
         });
 
-      // ─── 7. Stream answer to client WITH message_id ───
+      // 7. Stream answer to client WITH message_id
       sendEvent("assistant_response", {
         message_id: assistantMessage.id, // ← REAL DATABASE ID
         content_text: assistantContent.answer ?? "",
@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
       });
 
 
-      // ─── 7. Complete ───
+      // 8. Complete
       sendEvent("complete", { 
         success: true,
         metadata: {

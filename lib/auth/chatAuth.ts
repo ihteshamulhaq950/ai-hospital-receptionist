@@ -1,5 +1,4 @@
-// FILE: lib/auth/chatAuth.ts
-// Chat-specific auth utility with rate limiting
+// /lib/auth/chatAuth.ts
 
 import { createClient } from '../supabase/server';
 import { rateLimit } from '../utils/rateLimit';
