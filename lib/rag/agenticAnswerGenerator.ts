@@ -1,8 +1,7 @@
-// AGENTIC ANSWER GENERATOR (uses generic Google Provider)
 // lib/rag/agenticAnswerGenerator.ts
 
 import { callGeminiWithSchema } from "@/lib/ai/googleProvider";
-import { QueryIntent } from "@/lib/rag/queryClassifier";
+import { QueryIntent } from "@/types/rag";
 import { HospitalAnswer } from "@/types/rag";
 
 
@@ -112,16 +111,12 @@ function fallbackAnswer(hasContext: boolean, context: string): HospitalAnswer {
   };
 }
 
-export async function generateAgenticAnswer({
-  userQuery,
-  context,
+export async function generateNonRAGAnswer({
   intent,
 }: {
-  userQuery: string;
-  context: string;
   intent: QueryIntent;
 }): Promise<{ answer: string; suggestions: string[] }> {
-  console.log("[Answer Generator] Intent:", intent, "Has context:", context.length > 0);
+  console.log("[Answer Generator] Intent:", intent);
 
   // Handle greetings
   if (intent === "greeting") {
@@ -150,7 +145,7 @@ export async function generateAgenticAnswer({
   }
 
   // Handle unclear queries without context
-  if (intent === "unclear" && !context) {
+  if (intent === "unclear") {
     return {
       answer: "I'm not quite sure what you're asking about. I specialize in hospital information. Could you please clarify your question? I can help you with topics like services, timings, departments, procedures, and facilities.",
       suggestions: [
@@ -162,19 +157,30 @@ export async function generateAgenticAnswer({
     };
   }
 
-  // No context found for hospital query
-  if (!context) {
-    return {
-      answer: "I couldn't find specific information about that in our knowledge base. However, I can help you with many other hospital-related questions. Here are some common topics:",
-      suggestions: [
-        "Hospital address and contact details",
-        "OPD and emergency timings",
-        "Available medical departments",
-        "Appointment booking process",
-      ],
-    };
-  }
+  // Fallback for any other non-RAG intent
+  return {
+    answer:
+      "I'm here to help with hospital information. Please ask me about our services, timings, departments, or procedures.",
+    suggestions: [
+      "What are the hospital hours?",
+      "How do I book an appointment?",
+      "What departments are available?",
+      "Where is the hospital located?",
+    ],
+  };
+}
 
-  // Use generic Google Provider to generate answer with RAG context
+
+export async function generateRAGAnswer({
+  userQuery,
+  context,
+  intent,
+}: {
+  userQuery: string;
+  context: string;
+  intent: QueryIntent;
+}): Promise<{ answer: string; suggestions: string[] }> {
+  console.log("[Answer Generator] Intent:", intent, "Has context:", context.length > 0);
+  
   return await generateAnswer(userQuery, context);
 }

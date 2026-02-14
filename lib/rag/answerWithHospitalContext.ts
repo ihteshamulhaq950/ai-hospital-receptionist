@@ -1,10 +1,10 @@
 // MAIN AGENTIC RAG FUNCTION
 // lib/rag/answerWithHospitalContext.ts
 
-import { ContextUsedItem, AnswerWithContextParams, AnswerWithContextResult } from "@/types/rag";
-import { classifyAndRefineQuery } from "./queryClassifier";
+import { AnswerWithContextParams, AnswerWithContextResult } from "@/types/rag";
+import { classifyQuery } from "./queryClassifier";
 import { enhancedRAGSearch } from "./enhancedRAG";
-import { generateAgenticAnswer } from "./agenticAnswerGenerator";
+import { generateNonRAGAnswer, generateRAGAnswer } from "./agenticAnswerGenerator";
 
 export interface AgenticRAGParams extends Omit<AnswerWithContextParams, 'generateAnswer'> {
   onProgress?: (stage: string, details?: any) => void;
@@ -21,7 +21,7 @@ export async function answerWithHospitalContext({
     onProgress?.("classifying", { query: content });
     console.log("[Agentic RAG] Starting for query:", content);
     
-    const classifiedQuery = await classifyAndRefineQuery(content);
+    const classifiedQuery = await classifyQuery(content);
 
     console.log("[Agentic RAG] Classified:", classifiedQuery);
     onProgress?.("classifying", { 
@@ -35,9 +35,7 @@ export async function answerWithHospitalContext({
       onProgress?.("generating", { type: "direct_response" });
       console.log("[Agentic RAG] Direct response (no RAG needed)");
       
-      const assistantContent = await generateAgenticAnswer({
-        userQuery: content,
-        context: "",
+      const assistantContent = await generateNonRAGAnswer({
         intent: classifiedQuery.intent,
       });
 
@@ -74,7 +72,7 @@ export async function answerWithHospitalContext({
       sources_found: contextUsed.length 
     });
 
-    const assistantContent = await generateAgenticAnswer({
+    const assistantContent = await generateRAGAnswer({
       userQuery: content,
       context,
       intent: classifiedQuery.intent,
