@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 
 export async function POST() {
+  console.log("process.env.PHONE_NUMBER_ID:", process.env.WHATSAPP_PHONE_NUMBER_ID);
   try {
     const response = await fetch(
-      `https://graph.facebook.com/v24.0/${process.env.PHONE_NUMBER_ID}/register`,
+      `https://graph.facebook.com/v24.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/register`,
       {
         method: "POST",
         headers: {
@@ -17,6 +18,7 @@ export async function POST() {
       }
     );
 
+    console.log("WhatsApp registration response status:", response.status);
     const data = await response.json();
 
     return NextResponse.json(data);
