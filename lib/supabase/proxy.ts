@@ -7,6 +7,11 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
   const pathname = request.nextUrl.pathname;
 
+    // ✅ 1. Skip webhook entirely
+  if (pathname === "/api/webhook") {
+    return NextResponse.next();
+  }
+
   // 1. Define Route Logic
   const isAdminRoute =
     pathname.startsWith("/dashboard") || pathname.startsWith("/api/dashboard");
