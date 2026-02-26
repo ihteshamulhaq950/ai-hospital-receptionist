@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
 // Receive incoming messages (POST request from Meta)
 // POST - Receive messages
 export async function POST(request: NextRequest) {
+  console.log('ENV CHECK:', {
+  hasToken: !!ACCESS_TOKEN,
+  hasPhoneId: !!PHONE_NUMBER_ID,
+  phoneId: PHONE_NUMBER_ID
+});
   try {
     const body = await request.json();
     
