@@ -16,6 +16,7 @@ import {
   Users,
   Shield,
   Menu,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -503,15 +504,35 @@ export default function HospitalHomePage() {
             Hi, how can I help you?
           </p>
         </div>
-        <Link href="/chat">
-          <button className="relative group">
-            {/* Pulsing Ring Animation */}
-            <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
-            <div className="relative w-16 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 border-4 border-background">
-              <Bot className="w-8 h-8" />
+        <div className="flex flex-col gap-2">
+          <Link href="/chat">
+            <button className="relative group">
+              {/* Pulsing Ring Animation */}
+              <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
+              <div className="relative w-16 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 border-4 border-background">
+                <Bot className="w-8 h-8" />
+              </div>
+            </button>
+          </Link>
+          <button
+            onClick={async () => {
+              const response = await fetch('/api/whatsapp/contact');
+              if (response.ok) {
+                const data = await response.json();
+                if (data.redirect) {
+                  // window.location.href = data.redirect;
+                  window.open(data.redirect, '_blank');
+                }
+              }
+            }}
+            className="relative group"
+          >
+            <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
+            <div className="relative w-16 h-16 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 border-4 border-background">
+              <MessageCircle className="w-8 h-8" />
             </div>
           </button>
-        </Link>
+        </div>
       </div>
     </div>
   );

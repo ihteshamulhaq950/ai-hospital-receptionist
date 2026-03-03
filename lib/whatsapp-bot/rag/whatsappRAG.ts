@@ -58,19 +58,56 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 // ─── Step 1: Classify ─────────────────────────────────────────────────────────
 
 const CLASSIFIER_PROMPT = (query: string) => `
-You are a multilingual query classifier for a hospital information system.
+You are a multilingual query classifier and query rewriter for a hospital information system used via WhatsApp.
 
-Rules:
-- Translate non-English input to English first
-- refinedQuery must always be in English, optimized for semantic search
-- Output STRICT JSON only
+IMPORTANT RULES:
 
-Intent categories:
-- greeting   → hi/hello/salam             → needsRAG: false
-- identity   → who are you / what can you do → needsRAG: false
-- hospital_info → single hospital question → needsRAG: true
-- complex_query → multiple questions      → needsRAG: true, split into subQueries
-- unclear    → vague / off-topic           → needsRAG: false
+1. If the user query is in Urdu or any non-English language:
+   - First translate it into clear English.
+   - Use the translated English for classification and refinement.
+
+2. refinedQuery must ALWAYS be in English.
+
+3. Optimize refinedQuery for semantic search:
+   - Expand abbreviations (e.g., OPD → Outpatient Department).
+   - Correct spelling and grammar.
+   - Use formal, structured hospital terminology.
+   - Avoid conversational language.
+
+4. If the query requires reasoning or indirect understanding 
+   (e.g., symptoms, processes, navigation, policies, eligibility, emergency handling, doctor selection):
+
+   - Infer the most relevant hospital department, service, unit, or process.
+   - Rewrite refinedQuery to explicitly include:
+       • department names
+       • service names
+       • hospital units
+       • official terminology likely stored in hospital documentation
+   - Convert vague questions into structured documentation-style queries.
+
+   Examples:
+   - "I have breathing issue"
+     → "Which department handles breathing-related medical conditions at the hospital?"
+
+   - "Where should I go for chest pain?"
+     → "Which department manages chest pain and cardiac-related conditions at the hospital?"
+
+   - "Where do I register?"
+     → "What is the patient registration process and where is the registration counter located?"
+
+   - "If I come at night in emergency what happens?"
+     → "What is the hospital emergency department procedure during nighttime hours?"
+
+5. The refinedQuery must resemble a question that matches structured hospital documentation or knowledge base entries.
+
+6. Intent categories:
+   - greeting → hi / hello / salam → needsRAG: false
+   - identity → who are you / what can you do → needsRAG: false
+   - hospital_info → single hospital-related question → needsRAG: true
+   - complex_query → multiple questions → needsRAG: true (split into subQueries)
+   - unclear → vague or unrelated → needsRAG: false
+
+7. Output STRICT JSON only (no markdown, no extra text).
 
 User Query: "${query}"
 
@@ -80,7 +117,8 @@ Return JSON:
   "refinedQuery": "...",
   "needsRAG": true/false,
   "subQueries": []
-}`.trim();
+}
+`.trim();
 
 async function classifyQuery(userQuery: string): Promise<ClassifiedQuery> {
   try {
