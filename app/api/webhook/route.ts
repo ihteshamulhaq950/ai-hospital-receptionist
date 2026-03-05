@@ -6,25 +6,25 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWhatsAppAnswer } from "@/lib/whatsapp-bot/rag/whatsappRAG";
 
-export const runtime    = "nodejs";
-export const dynamic    = "force-dynamic";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 45;
 
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN!;
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
 const PHONE_NUM_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!;
-const WA_MESSAGES  = `https://graph.facebook.com/v25.0/${PHONE_NUM_ID}/messages`;
-const WA_HEADERS   = {
-  Authorization:  `Bearer ${ACCESS_TOKEN}`,
+const WA_MESSAGES = `https://graph.facebook.com/v25.0/${PHONE_NUM_ID}/messages`;
+const WA_HEADERS = {
+  Authorization: `Bearer ${ACCESS_TOKEN}`,
   "Content-Type": "application/json",
 } as const;
 
 // ─── GET: Webhook verification ────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const p  = req.nextUrl.searchParams;
+  const p = req.nextUrl.searchParams;
   const ok =
-    p.get("hub.mode")         === "subscribe" &&
+    p.get("hub.mode") === "subscribe" &&
     p.get("hub.verify_token") === VERIFY_TOKEN;
 
   return ok
@@ -47,27 +47,32 @@ export async function POST(req: NextRequest) {
   // Extract ONLY plain text messages.
   // Every other type (image, audio, video, document, sticker,
   // location, reaction, status update) is silently ignored — still 200.
-  const messages: { from: string; text: string; msgId: string; name: string }[] =
-    (body.entry ?? [])
-      .flatMap((e: any) => e.changes ?? [])
-      .filter((c: any) => c.field === "messages")
-      .flatMap((c: any) => {
-        const { messages = [], contacts = [] } = c.value ?? {};
-        return (messages as any[])
-          .filter(
-            (m) =>
-              m.type === "text" &&               // ← strict: text only
-              typeof m.text?.body === "string" &&
-              m.text.body.trim().length > 0
-          )
-          .map((m) => ({
-            from:  m.from                                                as string,
-            text:  (m.text.body as string).trim(),
-            msgId: m.id                                                  as string,
-            name:  (contacts as any[]).find((c) => c.wa_id === m.from)
-                     ?.profile?.name ?? "User",
-          }));
-      });
+  const messages: {
+    from: string;
+    text: string;
+    msgId: string;
+    name: string;
+  }[] = (body.entry ?? [])
+    .flatMap((e: any) => e.changes ?? [])
+    .filter((c: any) => c.field === "messages")
+    .flatMap((c: any) => {
+      const { messages = [], contacts = [] } = c.value ?? {};
+      return (messages as any[])
+        .filter(
+          (m) =>
+            m.type === "text" && // ← strict: text only
+            typeof m.text?.body === "string" &&
+            m.text.body.trim().length > 0,
+        )
+        .map((m) => ({
+          from: m.from as string,
+          text: (m.text.body as string).trim(),
+          msgId: m.id as string,
+          name:
+            (contacts as any[]).find((c) => c.wa_id === m.from)?.profile
+              ?.name ?? "User",
+        }));
+    });
 
   // No text messages (file, reaction, status, etc.) — ack and done
   if (!messages.length) {
@@ -84,9 +89,12 @@ export async function POST(req: NextRequest) {
 // ─── Core processor ───────────────────────────────────────────────────────────
 
 async function processMessage(msg: {
-  from: string; text: string; msgId: string; name: string;
+  from: string;
+  text: string;
+  msgId: string;
+  name: string;
 }): Promise<void> {
-  const t0       = Date.now();
+  const t0 = Date.now();
   const supabase = await createClient();
 
   // 1. Mark as read (blue ✓✓) + show typing indicator in one single API call.
@@ -100,9 +108,9 @@ async function processMessage(msg: {
     .from("whatsapp_messages")
     .insert({
       phone_number: msg.from,
-      message:      msg.text,
-      status:       "processing",
-      metadata:     { user_name: msg.name, message_id: msg.msgId },
+      message: msg.text,
+      status: "processing",
+      metadata: { user_name: msg.name, message_id: msg.msgId },
     })
     .select("id")
     .single();
@@ -113,11 +121,11 @@ async function processMessage(msg: {
   }
 
   // 3. Run RAG
-  let answer  = "Sorry, I'm having trouble right now. Please try again shortly.";
+  let answer = "Sorry, I'm having trouble right now. Please try again shortly.";
   let success = false;
 
   try {
-    answer  = await getWhatsAppAnswer(msg.text);
+    answer = await getWhatsAppAnswer(msg.text);
     success = true;
   } catch (err) {
     console.error("[WA Webhook] RAG failed:", err);
@@ -129,12 +137,12 @@ async function processMessage(msg: {
   await supabase
     .from("whatsapp_messages")
     .update({
-      response:           answer,
-      status:             "completed",
+      response: answer,
+      status: "completed",
       processing_time_ms: duration,
       metadata: {
-        user_name:   msg.name,
-        message_id:  msg.msgId,
+        user_name: msg.name,
+        message_id: msg.msgId,
         success,
         duration_ms: duration,
       },
@@ -144,7 +152,9 @@ async function processMessage(msg: {
   // 5. Send reply — typing indicator auto-dismisses the moment this arrives
   await sendText(msg.from, answer);
 
-  console.log(`[WA Webhook] ✓ ${msg.from} | ${duration}ms | success:${success}`);
+  console.log(
+    `[WA Webhook] ✓ ${msg.from} | ${duration}ms | success:${success}`,
+  );
 }
 
 // ─── WhatsApp API helpers ─────────────────────────────────────────────────────
@@ -169,13 +179,13 @@ async function processMessage(msg: {
 async function markReadAndShowTyping(messageId: string): Promise<void> {
   try {
     await fetch(WA_MESSAGES, {
-      method:  "POST",
+      method: "POST",
       headers: WA_HEADERS,
       body: JSON.stringify({
         messaging_product: "whatsapp",
-        status:            "read",
-        message_id:        messageId,
-        typing_indicator:  { type: "text" },
+        status: "read",
+        message_id: messageId,
+        typing_indicator: { type: "text" },
       }),
     });
   } catch (err) {
@@ -190,11 +200,11 @@ async function markReadAndShowTyping(messageId: string): Promise<void> {
  */
 async function sendText(to: string, body: string): Promise<void> {
   const res = await fetch(WA_MESSAGES, {
-    method:  "POST",
+    method: "POST",
     headers: WA_HEADERS,
     body: JSON.stringify({
       messaging_product: "whatsapp",
-      recipient_type:    "individual",
+      recipient_type: "individual",
       to,
       type: "text",
       text: { preview_url: false, body },
@@ -206,7 +216,6 @@ async function sendText(to: string, body: string): Promise<void> {
     throw new Error(`WA API ${res.status}: ${JSON.stringify(err)}`);
   }
 }
-
 
 // /**
 //  * app/api/whatsapp/webhook/route.ts
