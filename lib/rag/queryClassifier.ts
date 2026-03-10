@@ -162,6 +162,13 @@ async function classifyWithAI(userQuery: string): Promise<ClassifiedQuery> {
         Array.isArray(result.subQueries) && result.subQueries.length > 0
           ? result.subQueries
           : undefined,
+      // ✅ pass metaData through for medical_guidance
+      metaData: result.metaData?.answer
+        ? {
+            answer: result.metaData.answer,
+            suggestions: result.metaData.suggestions ?? [],
+          }
+        : undefined,
     };
   } catch (error) {
     console.error("[AI Classifier] Failed:", error);
