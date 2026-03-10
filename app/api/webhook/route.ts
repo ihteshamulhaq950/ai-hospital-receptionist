@@ -4,7 +4,10 @@
 
 import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getWhatsAppAnswer } from "@/lib/whatsapp-bot/rag/whatsappRAG";
+import {
+  getWhatsAppAnswer,
+  WhatsAppRAGResult,
+} from "@/lib/whatsapp-bot/rag/whatsappRAG";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -121,23 +124,30 @@ async function processMessage(msg: {
   }
 
   // 3. Run RAG
-  let answer = "Sorry, I'm having trouble right now. Please try again shortly.";
+  let ragResult: WhatsAppRAGResult = {
+    answer: "Sorry, I'm having trouble right now. Please try again shortly.",
+    suggestions: [],
+  };
   let success = false;
 
   try {
-    answer = await getWhatsAppAnswer(msg.text);
+    ragResult = await getWhatsAppAnswer(msg.text);
     success = true;
   } catch (err) {
     console.error("[WA Webhook] RAG failed:", err);
   }
 
   const duration = Date.now() - t0;
+  const formattedMessage = formatWhatsAppMessage(
+    ragResult.answer,
+    ragResult.suggestions,
+  );
 
   // 4. Persist response
   await supabase
     .from("whatsapp_messages")
     .update({
-      response: answer,
+      response: ragResult.answer, // store raw answer only
       status: "completed",
       processing_time_ms: duration,
       metadata: {
@@ -145,16 +155,27 @@ async function processMessage(msg: {
         message_id: msg.msgId,
         success,
         duration_ms: duration,
+        suggestions: ragResult.suggestions, // store suggestions separately
       },
     })
     .eq("id", row.id);
 
-  // 5. Send reply — typing indicator auto-dismisses the moment this arrives
-  await sendText(msg.from, answer);
+  // 5. Send formatted reply with answer + italic suggestions
+  await sendText(msg.from, formattedMessage);
 
   console.log(
     `[WA Webhook] ✓ ${msg.from} | ${duration}ms | success:${success}`,
   );
+}
+
+// ─── Format RAG result for WhatsApp ──────────────────────────────────────────
+
+function formatWhatsAppMessage(answer: string, suggestions: string[]): string {
+  if (!suggestions.length) return answer;
+
+  const formattedSuggestions = suggestions.map((s) => `_${s}_`).join("\n");
+
+  return `${answer}\n\n*You might also want to ask:*\n${formattedSuggestions}`;
 }
 
 // ─── WhatsApp API helpers ─────────────────────────────────────────────────────

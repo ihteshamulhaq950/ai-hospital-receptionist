@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         const result = await answerWithHospitalContext({
           content: content.trim(),
           namespace: getHospitalNamespace(),
-          topK: 2,
+          topK: 4,
           onProgress: (stage, details) => {
             // Real-time progress updates
             switch (stage) {

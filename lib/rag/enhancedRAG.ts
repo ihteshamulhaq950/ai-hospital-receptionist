@@ -6,7 +6,7 @@ import { ContextUsedItem } from "@/types/rag";
 export async function enhancedRAGSearch({
   queries,
   namespace,
-  topK = 3,
+  topK = 4,
 }: {
   queries: string[];
   namespace: any;

@@ -13,7 +13,7 @@ export interface AgenticRAGParams extends Omit<AnswerWithContextParams, 'generat
 export async function answerWithHospitalContext({
   content,
   namespace,
-  topK = 3,
+  topK = 4,
   onProgress,
 }: AgenticRAGParams): Promise<AnswerWithContextResult> {
   try {
