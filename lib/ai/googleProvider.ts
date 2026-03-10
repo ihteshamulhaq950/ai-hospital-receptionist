@@ -20,6 +20,7 @@ if (GEMINI_API_KEYS.length === 0) {
 
 function getRandomClient(): GoogleGenAI {
   const key = GEMINI_API_KEYS[Math.floor(Math.random() * GEMINI_API_KEYS.length)];
+  console.log(`GEMINI_API_KEY_${key} is used`)
   return new GoogleGenAI({ apiKey: key });
 }
 
