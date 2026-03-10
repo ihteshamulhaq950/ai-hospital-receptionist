@@ -69,6 +69,7 @@ export const QUERY_CLASSIFIER_SCHEMA = {
         "identity",
         "hospital_info",
         "complex_query",
+        "medical_guidance",
         "unclear",
       ],
     },
