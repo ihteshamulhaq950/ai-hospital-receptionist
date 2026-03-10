@@ -56,7 +56,7 @@ export interface ClassifiedQuery {
   metaData?: {
     answer: string;
     suggestions: string[];
-  }
+  };
 }
 
 export const QUERY_CLASSIFIER_SCHEMA = {
@@ -79,6 +79,16 @@ export const QUERY_CLASSIFIER_SCHEMA = {
       type: "array",
       items: { type: "string" },
     },
+    // ✅ added metaData to schema
+    metaData: {
+      type: "object",
+      properties: {
+        answer: { type: "string" },
+        suggestions: { type: "array", items: { type: "string" } },
+      },
+      required: ["answer", "suggestions"],
+    },
   },
-  required: ["intent", "refinedQuery", "needsRAG"],
+  // ✅ metaData in required so Gemini always returns it
+  required: ["intent", "refinedQuery", "needsRAG", "metaData"],
 };
