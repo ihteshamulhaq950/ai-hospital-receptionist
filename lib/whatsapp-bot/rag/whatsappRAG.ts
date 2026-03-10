@@ -46,7 +46,8 @@ const CLASSIFIER_SCHEMA = {
     answer: { type: "string" },
     suggestions: { type: "array", items: { type: "string" } },
   },
-  required: ["intent", "refinedQuery", "needsRAG"],
+  // ↓ THE FIX: force Gemini to always return answer + suggestions
+  required: ["intent", "refinedQuery", "needsRAG", "answer", "suggestions"],
 };
 
 const ANSWER_SCHEMA = {
@@ -153,13 +154,15 @@ async function classifyQuery(userQuery: string): Promise<ClassifiedQuery> {
         prompt: CLASSIFIER_PROMPT(userQuery),
         responseSchema: CLASSIFIER_SCHEMA,
         temperature: 0.2,
-        maxOutputTokens: 512, // bumped: medical_guidance now returns answer + suggestions
+        maxOutputTokens: 1024,
       }),
       8_000,
       "classify",
     );
 
-    return {
+    console.log("[WA RAG] Raw classifier result:", JSON.stringify(result)); // ← ADD THIS
+
+    const classified = {
       intent: result.intent ?? "hospital_info",
       refinedQuery: result.refinedQuery ?? userQuery.trim(),
       needsRAG: result.needsRAG ?? true,
@@ -167,14 +170,18 @@ async function classifyQuery(userQuery: string): Promise<ClassifiedQuery> {
         Array.isArray(result.subQueries) && result.subQueries.length > 0
           ? result.subQueries
           : undefined,
-      // preserve medical_guidance fields if present
       answer: result.answer?.trim() || undefined,
-      suggestions: Array.isArray(result.suggestions) && result.suggestions.length > 0
-        ? result.suggestions
-        : undefined,
+      suggestions:
+        Array.isArray(result.suggestions) && result.suggestions.length > 0
+          ? result.suggestions
+          : undefined,
     };
-  } catch {
-    // Pattern-based fallback — zero AI cost
+
+    console.log("[WA RAG] Classified:", JSON.stringify(classified)); // ← AND THIS
+    return classified;
+
+  } catch (err) {
+    console.error("[WA RAG] classifyQuery threw:", err); // ← AND THIS
     const lower = userQuery.toLowerCase().trim();
     if (/^(hi|hello|hey|salam|assalam)/i.test(lower))
       return { intent: "greeting", refinedQuery: userQuery, needsRAG: false };
@@ -255,7 +262,7 @@ async function generateAnswer(query: string, context: string): Promise<{ answer:
         prompt: ANSWER_PROMPT(query, context),
         responseSchema: ANSWER_SCHEMA,
         temperature: 0.5,
-        maxOutputTokens: 512,
+        maxOutputTokens: 1024,
       }),
       15_000,
       "generate",
