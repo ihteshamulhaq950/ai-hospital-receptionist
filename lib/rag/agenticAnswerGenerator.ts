@@ -113,10 +113,23 @@ function fallbackAnswer(hasContext: boolean, context: string): HospitalAnswer {
 
 export async function generateNonRAGAnswer({
   intent,
+  metaData
 }: {
   intent: QueryIntent;
+  metaData?: {
+    answer: string;
+    suggestions: string[];
+  };
 }): Promise<{ answer: string; suggestions: string[] }> {
   console.log("[Answer Generator] Intent:", intent);
+
+  // Handle medical guidance responses from classifier
+if (intent === "medical_guidance" && metaData) {
+  return {
+    answer: metaData.answer,
+    suggestions: metaData.suggestions ?? [],
+  };
+}
 
   // Handle greetings
   if (intent === "greeting") {

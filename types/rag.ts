@@ -33,11 +33,19 @@ export interface HospitalAnswer {
 }
 
 
+// export type QueryIntent =
+//   | "greeting"
+//   | "identity"
+//   | "hospital_info"
+//   | "complex_query"
+//   | "unclear";
+
 export type QueryIntent =
   | "greeting"
   | "identity"
   | "hospital_info"
   | "complex_query"
+  | "medical_guidance"
   | "unclear";
 
 export interface ClassifiedQuery {
@@ -45,6 +53,10 @@ export interface ClassifiedQuery {
   refinedQuery: string;
   needsRAG: boolean;
   subQueries?: string[];
+  metaData?: {
+    answer: string;
+    suggestions: string[];
+  }
 }
 
 export const QUERY_CLASSIFIER_SCHEMA = {

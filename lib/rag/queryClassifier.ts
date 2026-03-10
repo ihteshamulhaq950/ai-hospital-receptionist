@@ -3,127 +3,109 @@ import { callGeminiWithSchema } from "../ai/googleProvider";
 import { ClassifiedQuery, QUERY_CLASSIFIER_SCHEMA } from "@/types/rag";
 
 const CLASSIFIER_SYSTEM_PROMPT = `
-You are a multilingual query classifier and query rewriter for a hospital information retrieval system.
+You are a multilingual query classifier for a hospital assistant.
 
-IMPORTANT RULES:
+TASK
+1. Detect intent
+2. Translate non-English queries to English
+3. Rewrite query for semantic hospital search if RAG is needed
+4. Only generate answers when intent = "medical_guidance"
 
-1. If the user query is in Urdu or any non-English language:
-   - First translate it into clear English.
-   - Use the translated English for classification and refinement.
+SUPPORTED INTENTS
+- greeting
+- identity
+- hospital_info
+- complex_query
+- medical_guidance
+- unclear
 
-2. Always return refinedQuery in English only.
+LANGUAGE RULE
+If the query is Urdu or another language, translate it to English first.
+Always output refinedQuery in English.
 
-3. Optimize refinedQuery for semantic search:
-   - Expand abbreviations (e.g., OPD → Outpatient Department).
-   - Correct spelling and grammar.
-   - Use clear, formal, structured hospital terminology.
-   - Avoid conversational language.
+-------------------------------------
+RAG QUERY REWRITE (when needsRAG=true)
+Rewrite queries to match hospital documentation:
+- Expand abbreviations (OPD → Outpatient Department)
+- Correct grammar
+- Use formal hospital terminology
+- Convert vague queries into structured questions
 
-4. If the query requires reasoning or indirect understanding 
-   (e.g., symptoms, processes, navigation, policies, eligibility, emergency handling, doctor selection):
+Example:
+"Where do I register?"
+→ "What is the patient registration process and where is the registration counter located?"
 
-   - Infer the most relevant hospital department, service, unit, or process.
-   - Rewrite refinedQuery to explicitly include:
-       • department names
-       • service names
-       • hospital units
-       • official terminology likely stored in hospital documentation
+-------------------------------------
+MEDICAL GUIDANCE (DIRECT RESPONSE)
+If the user describes symptoms or asks which doctor to see:
 
-   - Convert vague or conversational queries into structured documentation-style questions.
+Examples: "ear pain", "I have chest pain", "skin allergy", "my child has fever"
 
-   Examples:
-   - "Where should I go for breathing problem?"
-     → "Which department handles breathing-related medical conditions at the hospital?"
+Classify as: intent = "medical_guidance", needsRAG = false, refinedQuery = "", subQueries = []
 
-   - "I have chest pain"
-     → "Which department manages chest pain and cardiac-related conditions at the hospital?"
+Specialist mappings:
+Ear → ENT | Chest → Cardiologist | Skin → Dermatologist | Child illness → Pediatrician
+Eye → Ophthalmologist | Bone/joint → Orthopedic | Stomach → Gastroenterologist
 
-   - "Where do I register?"
-     → "What is the patient registration process and where is the registration counter located?"
-
-   - "If I come at night in emergency what happens?"
-     → "What is the hospital emergency department procedure during nighttime hours?"
-
-5. The refinedQuery must resemble a question that aligns with structured hospital documentation or knowledge base entries.
-
-6. Do NOT explain anything.
-
-7. Output STRICT JSON only (no markdown, no text outside JSON).
-
-Classification Categories:
-
-- "greeting":
-  Examples: hi, hello, salam, assalamualaikum
-  → needsRAG: false
-
-- "identity":
-  Examples: who are you, what can you do, tum kya ho
-  → needsRAG: false
-
-- "hospital_info":
-  Single clear hospital-related question
-  → needsRAG: true
-
-- "complex_query":
-  Multiple hospital questions in one query
-  → needsRAG: true
-  → Split into clear English subQueries
-
-- "unclear":
-  Vague, incomplete, off-topic, or unrelated to hospital
-  → needsRAG: false
-
-Examples:
-
-Urdu Input:
-"opd ka time kya hai"
-→ {
-  "intent": "hospital_info",
-  "refinedQuery": "What are the operating hours of the Outpatient Department (OPD)?",
-  "needsRAG": true,
-  "subQueries": []
+REQUIRED output shape for medical_guidance:
+{
+  "intent": "medical_guidance",
+  "refinedQuery": "",
+  "needsRAG": false,
+  "subQueries": [],
+  "metaData": {
+    "answer": "For ear related symptoms you should consult an ENT specialist.",
+    "suggestions": [
+      "Are ENT specialists available today?",
+      "How can I book an ENT appointment?",
+      "What are ENT department timings?",
+      "Where is the ENT department located?",
+      "What conditions does the ENT department treat?"
+    ]
+  }
 }
 
-Complex Urdu:
-"opd ka time aur hospital ka address kya hai"
-→ {
-  "intent": "complex_query",
-  "refinedQuery": "What are the OPD operating hours and what is the hospital address?",
-  "needsRAG": true,
-  "subQueries": [
-    "What are the OPD operating hours?",
-    "What is the hospital address?"
-  ]
-}
-`;
+-------------------------------------
+INTENT RULES
+greeting       → needsRAG=false
+identity       → needsRAG=false
+hospital_info  → needsRAG=true
+complex_query  → needsRAG=true, split into subQueries
+unclear        → needsRAG=false
 
-
-// build final and classfied query from raw user query
+-------------------------------------
+OUTPUT RULES
+- medical_guidance → MUST include metaData (answer + exactly 5 suggestions)
+- ALL other intents → MUST NOT include metaData field at all
+- Return STRICT JSON only. No markdown, no explanations.
+`.trim();
 
 function buildClassifierPrompt(userQuery: string): string {
   return `${CLASSIFIER_SYSTEM_PROMPT}
 
-User Query:
-"${userQuery}"
+User Query: "${userQuery}"
 
-Now:
-1. Detect language.
-2. Translate to English if needed.
-3. Classify intent.
-4. Generate optimized refinedQuery in English.
-5. Split into subQueries if complex.
+Return JSON using the correct shape for the detected intent:
 
-Return ONLY valid JSON in this format:
-
+If medical_guidance:
 {
-  "intent": "greeting" | "identity" | "hospital_info" | "complex_query" | "unclear",
-  "refinedQuery": "optimized English search query",
-  "needsRAG": true/false,
-  "subQueries": ["sub-query 1", "sub-query 2"] // only for complex_query, otherwise empty array
-}
-`.trim();
+  "intent": "medical_guidance",
+  "refinedQuery": "",
+  "needsRAG": false,
+  "subQueries": [],
+  "metaData": { "answer": "...", "suggestions": ["...x5"] }
 }
 
+All other intents:
+{
+  "intent": "greeting|identity|hospital_info|complex_query|unclear",
+  "refinedQuery": "optimized English query",
+  "needsRAG": true|false,
+  "subQueries": ["only for complex_query, else empty array"]
+}
+
+Return STRICT JSON only.`.trim();
+}
 
 // Fallback classfier (No AI calls)
 function classifyWithPatterns(userQuery: string): ClassifiedQuery {
@@ -161,7 +143,6 @@ function classifyWithPatterns(userQuery: string): ClassifiedQuery {
   };
 }
 
-
 async function classifyWithAI(userQuery: string): Promise<ClassifiedQuery> {
   try {
     const result = await callGeminiWithSchema<ClassifiedQuery>({
@@ -177,11 +158,11 @@ async function classifyWithAI(userQuery: string): Promise<ClassifiedQuery> {
       intent: result.intent ?? "hospital_info",
       refinedQuery: result.refinedQuery ?? userQuery.trim(),
       needsRAG: result.needsRAG ?? true,
-      subQueries: Array.isArray(result.subQueries) && result.subQueries.length > 0
-        ? result.subQueries
-        : undefined,
-    }
-    
+      subQueries:
+        Array.isArray(result.subQueries) && result.subQueries.length > 0
+          ? result.subQueries
+          : undefined,
+    };
   } catch (error) {
     console.error("[AI Classifier] Failed:", error);
     throw error; // let the called handle the fallback
@@ -202,7 +183,10 @@ export async function classifyQuery(
     console.log("[Query Classifier] AI classification successful");
     return aiResult;
   } catch (error) {
-    console.warn("[Query Classifier] AI classification failed, using pattern-based fallback:", error);
+    console.warn(
+      "[Query Classifier] AI classification failed, using pattern-based fallback:",
+      error,
+    );
     const fallbackResult = classifyWithPatterns(userQuery);
     return fallbackResult;
   }
