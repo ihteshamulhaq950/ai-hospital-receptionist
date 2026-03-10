@@ -37,6 +37,7 @@ export async function answerWithHospitalContext({
       
       const assistantContent = await generateNonRAGAnswer({
         intent: classifiedQuery.intent,
+        metaData: classifiedQuery.metaData, // ← this was missing
       });
 
       onProgress?.("complete", { used_rag: false });

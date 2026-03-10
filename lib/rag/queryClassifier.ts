@@ -149,7 +149,7 @@ async function classifyWithAI(userQuery: string): Promise<ClassifiedQuery> {
       prompt: buildClassifierPrompt(userQuery),
       responseSchema: QUERY_CLASSIFIER_SCHEMA,
       temperature: 0.3,
-      maxOutputTokens: 512,
+      maxOutputTokens: 1024,
     });
 
     console.log("[AI Classifier] Result:", result);
