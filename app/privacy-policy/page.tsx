@@ -126,7 +126,10 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="text-base leading-relaxed">
-                Care Link Hospital ("we", "us", "our" or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.
+                Care Link Hospital ("we", "us", "our" or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you interact with our AI-powered healthcare assistant and services.
+              </p>
+              <p className="text-base leading-relaxed mt-4">
+                Effective Date: March 11, 2026
               </p>
             </section>
 
@@ -135,52 +138,75 @@ export default function PrivacyPolicyPage() {
                 2. Information We Collect
               </h2>
               <p className="text-base leading-relaxed mb-4">
-                We may collect information about you in a variety of ways. The information we may collect on the Site includes:
+                We may collect information about you through our AI assistant in the following ways:
               </p>
               <ul className="list-disc list-inside space-y-2 text-base">
-                <li>Personal Data: Personally identifiable information, such as your name, shipping address, email address, and telephone number, that you voluntarily give to us when you register with the Site or when you choose to participate in various activities related to the Site.</li>
-                <li>Financial Data: Financial information, such as data related to your payment method (e.g. valid credit card number, card brand, expiration date) that we may collect when you purchase, order, return, exchange, or request information about services from the Site.</li>
-                <li>Data From Social Networks: User information from social networks, including your name, your social network username, location, gender, birth date, email address, profile picture, and any other information you choose to make public.</li>
+                <li><strong>Custom bot:</strong> Stores messages anonymously. No emails or personal information are collected.</li>
+                <li><strong>WhatsApp bot:</strong> Messages are not stored. All messages are processed temporarily to generate replies.</li>
+                <li>Health-related inquiries and questions may be analyzed to improve our service responses.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                3. Use of Your Information
+                3. How We Use Your Data
               </h2>
               <p className="text-base leading-relaxed mb-4">
-                Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:
+                We use the information we collect for the following purposes:
               </p>
               <ul className="list-disc list-inside space-y-2 text-base">
-                <li>Fulfill and manage purchases, orders, payments, and other transactions related to the Site</li>
-                <li>Generate a personal profile about you in order to better understand how you use the Site</li>
-                <li>Email you regarding your account or order</li>
-                <li>Improve the Site in order to respond to your customer preferences</li>
-                <li>Process your financial information for billing purposes only</li>
+                <li>To generate immediate and accurate replies to your healthcare inquiries</li>
+                <li>To improve our AI responses and service quality through anonymous data analysis</li>
+                <li>To provide better healthcare guidance and information</li>
+                <li>To comply with legal and regulatory requirements</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                4. Disclosure of Your Information
+                4. Security of Your Information
               </h2>
               <p className="text-base leading-relaxed">
-                We may share or disclose your information in the following circumstances: By Law or to Protect Rights; Third-Party Service Providers; Marketing Communications; Affiliates; Business Transfers; and Consent. We are not responsible for the actions of third parties with whom you share personal or sensitive data, and we have no authority to manage or control third-party solicitation or consumption of your divulged information.
+                Reasonable measures are taken to secure anonymous data for the custom bot. WhatsApp bot messages are not stored, significantly reducing any security risk. We implement encryption and secure storage practices to protect your information. However, perfect security is not guaranteed on the Internet.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                5. Security of Your Information
+                5. Third-Party Services
               </h2>
               <p className="text-base leading-relaxed">
-                We use administrative, technical, and physical security measures to protect your personal information. However, perfect security is not guaranteed on the Internet. Please protect your account password appropriately and notify us of any unauthorized access to your account.
+                The WhatsApp bot uses the WhatsApp Cloud API to send and receive messages. Data is processed by WhatsApp according to their privacy policies. We do not share personal data with third parties without your explicit consent.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                6. Contact Us
+                6. Your Privacy Rights
+              </h2>
+              <p className="text-base leading-relaxed mb-4">
+                You have the right to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-base">
+                <li>Request access to your personal data</li>
+                <li>Request deletion of your data (visit our Data Deletion page)</li>
+                <li>Opt-out of data collection where applicable</li>
+                <li>Request correction of inaccurate data</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                7. Changes to This Policy
+              </h2>
+              <p className="text-base leading-relaxed">
+                We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Effective Date". Your continued use of our services after any changes indicates your acceptance of the new Privacy Policy.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                8. Contact Us
               </h2>
               <p className="text-base leading-relaxed">
                 If you have questions or comments about this Privacy Policy, please contact us at:
@@ -245,7 +271,7 @@ export default function PrivacyPolicyPage() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="/about"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     About Us
@@ -429,8 +455,5 @@ export default function PrivacyPolicyPage() {
     </div>
   );
 }
-    </main>
-  );
-};
 
-export default PrivacyPolicyPage;
+

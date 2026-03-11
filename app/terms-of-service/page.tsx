@@ -436,11 +436,3 @@ export default function TermsOfServicePage() {
     </div>
   );
 }
-          Questions regarding these terms: <a href="mailto:ulhaqihtesham30@gmail.com" className="text-blue-600">ulhaqihtesham30@gmail.com</a>.
-        </p>
-      </section>
-    </main>
-  );
-};
-
-export default TermsOfServicePage;
