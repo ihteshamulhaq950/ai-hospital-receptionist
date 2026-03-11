@@ -56,24 +56,23 @@ export default function HospitalHomePage() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="#services"
+              href="/privacy-policy"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
-              Services
+              Privacy Policy
             </Link>
             <Link
-              href="#doctors"
+              href="/data-deletion"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
-              Doctors
+              Data Deletion
             </Link>
             <Link
-              href="#contact"
+              href="/terms-of-service"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
-              Contact
+              Terms of Service
             </Link>
-            <Button size="sm">Book Appointment</Button>
             <ThemeToggle />
           </nav>
 
@@ -92,33 +91,26 @@ export default function HospitalHomePage() {
                 </VisuallyHidden>
                 <nav className="flex flex-col gap-2 mt-8">
                   <Link
-                    href="#services"
+                    href="/privacy-policy"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    Services
+                    Privacy Policy
                   </Link>
                   <Link
-                    href="#doctors"
+                    href="/data-deletion"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    Doctors
+                    Data Deletion
                   </Link>
                   <Link
-                    href="#contact"
+                    href="/terms-of-service"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    Contact
+                    Terms of Service
                   </Link>
-                  <Button
-                    className="m-6"
-                    size="lg"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Book Appointment
-                  </Button>
                 </nav>
               </SheetContent>
             </Sheet>
