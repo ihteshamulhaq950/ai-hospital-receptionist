@@ -245,14 +245,6 @@ export default function DataDeletionPage() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="/about"
-                    className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
-                  >
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
@@ -269,18 +261,26 @@ export default function DataDeletionPage() {
                 </li>
                 <li>
                   <Link
-                    href="/"
+                    href="/privacy-policy"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
-                    Doctors
+                    Privacy Policy
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/"
+                    href="/terms-of-service"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
-                    Careers
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/data-deletion"
+                    className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
+                  >
+                    Data Deletion
                   </Link>
                 </li>
               </ul>
