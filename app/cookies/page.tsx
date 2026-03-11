@@ -11,21 +11,10 @@ import {
   Twitter,
   Instagram,
   Linkedin,
-  Heart,
-  Award,
-  Users,
-  Shield,
-  Menu,
   MessageCircle,
+  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import {
   Sheet,
@@ -35,40 +24,38 @@ import {
 } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
 
-export default function HospitalHomePage() {
+export default function CookiePolicyPage() {
   const [isOpen, setIsOpen] = useState(false);
-  const { userId, isAnonymous } = useAuth();
 
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <Bot className="w-7 h-7 text-white font-bold text-xl" />
             </div>
             <span className="font-bold text-xl text-foreground">
               Care Link Hospital
             </span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="#services"
+              href="/#services"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Services
             </Link>
             <Link
-              href="#doctors"
+              href="/#doctors"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Doctors
             </Link>
             <Link
-              href="#contact"
+              href="/contact"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Contact
@@ -92,21 +79,21 @@ export default function HospitalHomePage() {
                 </VisuallyHidden>
                 <nav className="flex flex-col gap-2 mt-8">
                   <Link
-                    href="#services"
+                    href="/#services"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Services
                   </Link>
                   <Link
-                    href="#doctors"
+                    href="/#doctors"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Doctors
                   </Link>
                   <Link
-                    href="#contact"
+                    href="/contact"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
@@ -126,177 +113,91 @@ export default function HospitalHomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main>
-        <section className="py-12 md:py-24 bg-linear-to-b from-blue-50 to-background dark:from-blue-950/20 dark:to-background">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground mb-6 text-balance">
-              World-Class Healthcare,{" "}
-              <span className="text-blue-600">Close to Home</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 text-pretty">
-              Care Link provides 24/7 emergency services, specialized
-              consultations, and advanced diagnostics with a patient-first
-              approach.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="w-full sm:w-auto px-8">
-                Our Services
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto px-8"
-              >
-                Find a Doctor
-              </Button>
-              {!isAnonymous && userId && (
-                <Link href={'/dashboard'}>
-                  <Button
-                  size="lg"
-                  className="w-full sm:w-auto px-8 bg-linear-to-r from-blue-600 to-blue-700 hover:shadow-lg hover:shadow-blue-500/50 transition-shadow relative group"
-                >
-                  <div className="absolute inset-0 rounded-lg bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
-                  <span className="relative">Go to Dashboard</span>
-                </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </section>
+      {/* Main Content */}
+      <main className="py-12 md:py-24">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-8">
+            Cookie Policy
+          </h1>
 
-        {/* Info Cards */}
-        <section className="py-16" id="services">
-          <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <CardTitle>Emergency Contact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Call (555) 123-4567 for immediate assistance 24/7.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <CardTitle>Visit Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  123 Health Ave, Medical District, NY 10001.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <CardTitle>Working Hours</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  OPD: 9:00 AM - 8:00 PM. Emergency: Open 24 Hours.
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Why Choose Us Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Why Choose Care Link?
+          <div className="space-y-8 text-muted-foreground">
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                1. What Are Cookies?
               </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                We combine cutting-edge medical technology with compassionate
-                care to deliver the best health outcomes.
+              <p className="text-base leading-relaxed">
+                Cookies are small data files that are placed on your device when you visit a website. They help us enhance your experience, analyze website usage, and deliver personalized content.
               </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader>
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4 text-green-600">
-                    <Heart className="w-6 h-6" />
-                  </div>
-                  <CardTitle className="text-lg">
-                    Patient-Centered Care
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Every decision we make prioritizes your health and comfort.
-                  </CardDescription>
-                </CardContent>
-              </Card>
+            </section>
 
-              <Card>
-                <CardHeader>
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4 text-purple-600">
-                    <Award className="w-6 h-6" />
-                  </div>
-                  <CardTitle className="text-lg">
-                    Award-Winning Excellence
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Recognized nationally for our quality of care and
-                    innovation.
-                  </CardDescription>
-                </CardContent>
-              </Card>
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                2. Types of Cookies We Use
+              </h2>
+              <p className="text-base leading-relaxed mb-4">
+                Care Link Hospital uses the following types of cookies:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-base">
+                <li><strong>Essential Cookies:</strong> These cookies are necessary for the website to function properly and cannot be disabled.</li>
+                <li><strong>Performance Cookies:</strong> These help us understand how visitors use our website by collecting information about pages visited and errors encountered.</li>
+                <li><strong>Functionality Cookies:</strong> These enable the website to provide enhanced functionality and personalization based on your preferences.</li>
+                <li><strong>Marketing Cookies:</strong> These track your activity to deliver targeted advertising and measure campaign effectiveness.</li>
+              </ul>
+            </section>
 
-              <Card>
-                <CardHeader>
-                  <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mb-4 text-orange-600">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <CardTitle className="text-lg">Expert Medical Team</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    Board-certified specialists with years of experience in
-                    their fields.
-                  </CardDescription>
-                </CardContent>
-              </Card>
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                3. How We Use Cookies
+              </h2>
+              <p className="text-base leading-relaxed">
+                We use cookies to remember your preferences, understand how you use our website, improve our services, and provide you with relevant content and advertising. This helps us deliver a better user experience and measure the effectiveness of our marketing campaigns.
+              </p>
+            </section>
 
-              <Card>
-                <CardHeader>
-                  <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-4 text-cyan-600">
-                    <Shield className="w-6 h-6" />
-                  </div>
-                  <CardTitle className="text-lg">Advanced Technology</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>
-                    State-of-the-art equipment for accurate diagnosis and
-                    treatment.
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </div>
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                4. Third-Party Cookies
+              </h2>
+              <p className="text-base leading-relaxed">
+                Our website may contain links to third-party websites and services that use their own cookies. We are not responsible for the cookie practices of third-party sites. Please review their privacy policies to understand their cookie usage.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                5. Managing Your Cookies
+              </h2>
+              <p className="text-base leading-relaxed mb-4">
+                You can control and manage cookies through your browser settings. Most browsers allow you to:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-base">
+                <li>View what cookies are set on your device</li>
+                <li>Allow or block specific cookies</li>
+                <li>Delete all cookies from your device</li>
+                <li>Set your browser to notify you when a cookie is being set</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                6. Contact Us
+              </h2>
+              <p className="text-base leading-relaxed">
+                If you have questions about our cookie policy, please contact us at:
+              </p>
+              <p className="text-base leading-relaxed mt-4">
+                Email: cookies@carelink.com<br />
+                Phone: (555) 123-4567
+              </p>
+            </section>
           </div>
-        </section>
+        </div>
       </main>
 
       {/* Footer */}
       <footer className="bg-muted/50 border-t mt-16" id="contact">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* About Section */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -307,8 +208,7 @@ export default function HospitalHomePage() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Providing exceptional healthcare services with compassion and
-                expertise since 1990.
+                Providing exceptional healthcare services with compassion and expertise since 1990.
               </p>
               <div className="flex gap-3">
                 <Link
@@ -338,11 +238,8 @@ export default function HospitalHomePage() {
               </div>
             </div>
 
-            {/* Quick Links */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4">
-                Quick Links
-              </h3>
+              <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
@@ -387,15 +284,12 @@ export default function HospitalHomePage() {
               </ul>
             </div>
 
-            {/* Services */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4">
-                Our Services
-              </h3>
+              <h3 className="font-semibold text-foreground mb-4">Our Services</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Emergency Care
@@ -403,7 +297,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Cardiology
@@ -411,7 +305,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Orthopedics
@@ -419,7 +313,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Pediatrics
@@ -427,7 +321,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Laboratory
@@ -436,7 +330,6 @@ export default function HospitalHomePage() {
               </ul>
             </div>
 
-            {/* Contact Info */}
             <div>
               <h3 className="font-semibold text-foreground mb-4">Contact Us</h3>
               <ul className="space-y-3">
@@ -468,29 +361,28 @@ export default function HospitalHomePage() {
             </div>
           </div>
 
-          {/* Bottom Bar */}
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
               © 2024 Care Link Hospital. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link
-                href="/privacy-policy"
+                href="/privacy"
                 className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
-                href="/terms-of-service"
+                href="/terms"
                 className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
               >
                 Terms of Service
               </Link>
               <Link
-                href="/data-deletion"
+                href="/cookies"
                 className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
               >
-                Data Deletion
+                Cookie Policy
               </Link>
             </div>
           </div>
@@ -507,7 +399,6 @@ export default function HospitalHomePage() {
         <div className="flex flex-col gap-2">
           <Link href="/chat">
             <button className="relative group">
-              {/* Pulsing Ring Animation */}
               <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
               <div className="relative w-16 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 border-4 border-background">
                 <Bot className="w-8 h-8" />
@@ -520,7 +411,6 @@ export default function HospitalHomePage() {
               if (response.ok) {
                 const data = await response.json();
                 if (data.redirect) {
-                  // window.location.href = data.redirect;
                   window.open(data.redirect, '_blank');
                 }
               }

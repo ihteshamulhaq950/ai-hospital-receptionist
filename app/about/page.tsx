@@ -35,40 +35,38 @@ import {
 } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
 
-export default function HospitalHomePage() {
+export default function AboutUsPage() {
   const [isOpen, setIsOpen] = useState(false);
-  const { userId, isAnonymous } = useAuth();
 
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
               <Bot className="w-7 h-7 text-white font-bold text-xl" />
             </div>
             <span className="font-bold text-xl text-foreground">
               Care Link Hospital
             </span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="#services"
+              href="/#services"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Services
             </Link>
             <Link
-              href="#doctors"
+              href="/#doctors"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Doctors
             </Link>
             <Link
-              href="#contact"
+              href="/contact"
               className="text-sm font-medium text-muted-foreground hover:text-blue-600"
             >
               Contact
@@ -92,21 +90,21 @@ export default function HospitalHomePage() {
                 </VisuallyHidden>
                 <nav className="flex flex-col gap-2 mt-8">
                   <Link
-                    href="#services"
+                    href="/#services"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Services
                   </Link>
                   <Link
-                    href="#doctors"
+                    href="/#doctors"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     Doctors
                   </Link>
                   <Link
-                    href="#contact"
+                    href="/contact"
                     className="text-base font-medium text-foreground hover:text-blue-600 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
@@ -131,108 +129,88 @@ export default function HospitalHomePage() {
         <section className="py-12 md:py-24 bg-linear-to-b from-blue-50 to-background dark:from-blue-950/20 dark:to-background">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground mb-6 text-balance">
-              World-Class Healthcare,{" "}
-              <span className="text-blue-600">Close to Home</span>
+              About <span className="text-blue-600">Care Link Hospital</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 text-pretty">
-              Care Link provides 24/7 emergency services, specialized
-              consultations, and advanced diagnostics with a patient-first
-              approach.
+              Committed to delivering excellence in healthcare through innovation, compassion, and patient-centered care.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="w-full sm:w-auto px-8">
-                Our Services
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto px-8"
-              >
-                Find a Doctor
-              </Button>
-              {!isAnonymous && userId && (
-                <Link href={'/dashboard'}>
-                  <Button
-                  size="lg"
-                  className="w-full sm:w-auto px-8 bg-linear-to-r from-blue-600 to-blue-700 hover:shadow-lg hover:shadow-blue-500/50 transition-shadow relative group"
-                >
-                  <div className="absolute inset-0 rounded-lg bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
-                  <span className="relative">Go to Dashboard</span>
-                </Button>
-                </Link>
-              )}
-            </div>
           </div>
         </section>
 
-        {/* Info Cards */}
-        <section className="py-16" id="services">
-          <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <CardTitle>Emergency Contact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Call (555) 123-4567 for immediate assistance 24/7.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <CardTitle>Visit Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  123 Health Ave, Medical District, NY 10001.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <CardTitle>Working Hours</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  OPD: 9:00 AM - 8:00 PM. Emergency: Open 24 Hours.
-                </CardDescription>
-              </CardContent>
-            </Card>
+        {/* Our Story */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
+              Our Story
+            </h2>
+            <p className="text-base text-muted-foreground leading-relaxed mb-6">
+              Founded in 1990, Care Link Hospital has been a beacon of hope and healing in our community for over three decades. What began as a small clinic has grown into a state-of-the-art medical facility serving thousands of patients annually.
+            </p>
+            <p className="text-base text-muted-foreground leading-relaxed mb-6">
+              Our journey has been marked by a commitment to excellence, innovation, and placing patients at the heart of everything we do. We've invested in the latest medical technologies and recruited the finest medical professionals to ensure our patients receive world-class care.
+            </p>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Today, Care Link Hospital stands proud as a leading healthcare institution, renowned for its specialized services, compassionate staff, and positive patient outcomes.
+            </p>
           </div>
         </section>
 
-        {/* Why Choose Us Section */}
+        {/* Our Mission, Vision, Values */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Why Choose Care Link?
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                We combine cutting-edge medical technology with compassionate
-                care to deliver the best health outcomes.
-              </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
+              Our Mission, Vision & Values
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-blue-600">Mission</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base text-muted-foreground">
+                    To provide exceptional, affordable, and accessible healthcare services to all patients with compassion, integrity, and excellence.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-blue-600">Vision</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base text-muted-foreground">
+                    To be the most trusted and preferred healthcare provider, recognized for innovation, quality care, and positive health outcomes.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-blue-600">Core Values</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base text-muted-foreground">
+                    Compassion, Integrity, Excellence, Innovation, and Patient-Centered Care guide every decision and action we take.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          </div>
+        </section>
+
+        {/* Why Choose Us */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
+              Why Choose Care Link?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
               <Card>
                 <CardHeader>
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4 text-green-600">
                     <Heart className="w-6 h-6" />
                   </div>
-                  <CardTitle className="text-lg">
-                    Patient-Centered Care
-                  </CardTitle>
+                  <CardTitle className="text-lg">Patient-Centered Care</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
@@ -246,14 +224,11 @@ export default function HospitalHomePage() {
                   <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4 text-purple-600">
                     <Award className="w-6 h-6" />
                   </div>
-                  <CardTitle className="text-lg">
-                    Award-Winning Excellence
-                  </CardTitle>
+                  <CardTitle className="text-lg">Award-Winning Excellence</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
-                    Recognized nationally for our quality of care and
-                    innovation.
+                    Recognized nationally for our quality of care and innovation.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -267,8 +242,7 @@ export default function HospitalHomePage() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
-                    Board-certified specialists with years of experience in
-                    their fields.
+                    Board-certified specialists with years of experience.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -282,8 +256,7 @@ export default function HospitalHomePage() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
-                    State-of-the-art equipment for accurate diagnosis and
-                    treatment.
+                    State-of-the-art equipment for accurate diagnosis and treatment.
                   </CardDescription>
                 </CardContent>
               </Card>
@@ -296,7 +269,6 @@ export default function HospitalHomePage() {
       <footer className="bg-muted/50 border-t mt-16" id="contact">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* About Section */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -307,8 +279,7 @@ export default function HospitalHomePage() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Providing exceptional healthcare services with compassion and
-                expertise since 1990.
+                Providing exceptional healthcare services with compassion and expertise since 1990.
               </p>
               <div className="flex gap-3">
                 <Link
@@ -338,11 +309,8 @@ export default function HospitalHomePage() {
               </div>
             </div>
 
-            {/* Quick Links */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4">
-                Quick Links
-              </h3>
+              <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
@@ -387,15 +355,12 @@ export default function HospitalHomePage() {
               </ul>
             </div>
 
-            {/* Services */}
             <div>
-              <h3 className="font-semibold text-foreground mb-4">
-                Our Services
-              </h3>
+              <h3 className="font-semibold text-foreground mb-4">Our Services</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Emergency Care
@@ -403,7 +368,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Cardiology
@@ -411,7 +376,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Orthopedics
@@ -419,7 +384,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Pediatrics
@@ -427,7 +392,7 @@ export default function HospitalHomePage() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-sm text-muted-foreground hover:text-blue-600 transition-colors"
                   >
                     Laboratory
@@ -436,7 +401,6 @@ export default function HospitalHomePage() {
               </ul>
             </div>
 
-            {/* Contact Info */}
             <div>
               <h3 className="font-semibold text-foreground mb-4">Contact Us</h3>
               <ul className="space-y-3">
@@ -468,7 +432,6 @@ export default function HospitalHomePage() {
             </div>
           </div>
 
-          {/* Bottom Bar */}
           <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
               © 2024 Care Link Hospital. All rights reserved.
@@ -507,7 +470,6 @@ export default function HospitalHomePage() {
         <div className="flex flex-col gap-2">
           <Link href="/chat">
             <button className="relative group">
-              {/* Pulsing Ring Animation */}
               <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-25 group-hover:opacity-40 transition-opacity"></div>
               <div className="relative w-16 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 border-4 border-background">
                 <Bot className="w-8 h-8" />
@@ -520,7 +482,6 @@ export default function HospitalHomePage() {
               if (response.ok) {
                 const data = await response.json();
                 if (data.redirect) {
-                  // window.location.href = data.redirect;
                   window.open(data.redirect, '_blank');
                 }
               }
